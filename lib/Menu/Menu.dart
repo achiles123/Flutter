@@ -6,7 +6,14 @@ export 'package:flutter_app/Menu/MenuThird.dart';
 class Menu extends StatelessWidget{
 
   Widget build(BuildContext context) {
-    return  GetBody();
+    return  Center(
+      child: Column(
+        children: <Widget>[
+          GetBody(),
+        ],
+        mainAxisAlignment: MainAxisAlignment.center,
+      ),
+    );
   }
 
   Widget GetBody(){

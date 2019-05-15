@@ -75,14 +75,7 @@ class _SampleAppPageState extends State<SampleAppPage> {
           ],
         )
       ),
-      body: Center(
-        child: Column(
-          children: <Widget>[
-            SwitchMenu(),
-          ],
-          mainAxisAlignment: MainAxisAlignment.center,
-        ),
-      )
+      body: SwitchMenu()
     );
   }
 
