@@ -13,7 +13,7 @@ class MenuThird extends Menu{
   Widget GetBody() {
     // TODO: implement GetBody
     return GridView.builder(
-      itemCount: 100,
+      itemCount: 20,
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3),
       itemBuilder: (BuildContext context,int index){
         return new GestureDetector(
@@ -35,6 +35,7 @@ class MenuThird extends Menu{
                     ),
                   ],
                 )
+
             );
           },
         );
