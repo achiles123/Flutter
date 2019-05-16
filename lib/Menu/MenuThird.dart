@@ -1,7 +1,14 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/Menu/Menu.dart';
 
 class MenuThird extends Menu{
+  @override
+  Widget build(BuildContext context) {
+    // TODO: implement build
+    return GetBody();
+  }
+
   @override
   Widget GetBody() {
     // TODO: implement GetBody
@@ -13,13 +20,22 @@ class MenuThird extends Menu{
           child: Card(
             child: Container(child: Text("Item $index"),alignment: Alignment.center,),
             elevation: 3,
-
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
           ),
           onTap: (){
             showDialog(
                 context: context,
-                barrierDismissible: false,
-                child:Text("Selected item $index") );
+                barrierDismissible: true,
+                child:CupertinoAlertDialog(
+                  content: Text("Clicked Item $index"),
+                  actions: <Widget>[
+                    FlatButton(
+                      child: Icon(Icons.close,color: Colors.red,),
+                      onPressed: (){Navigator.of(context).pop();},
+                    ),
+                  ],
+                )
+            );
           },
         );
       },

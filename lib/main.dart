@@ -49,7 +49,7 @@ class _SampleAppPageState extends State<SampleAppPage> {
     }
   }
 
-  Widget SwitchMenu() {
+  Widget SwitchBody() {
     switch(_menuIndex){
       case 0:return new MenuFirst();
       case 1:return new MenuSecond();
@@ -61,6 +61,26 @@ class _SampleAppPageState extends State<SampleAppPage> {
   @override
   Widget build(BuildContext context) {
     BuildMenu();
+    return DefaultTabController(
+      length: 0,
+      child: Scaffold(
+          appBar: AppBar(
+            title: Text("Sample App"),
+            bottom: null,
+          ),
+          drawer: Drawer(
+              child: ListView(
+                children: <Widget>[
+                  DrawerHeader(child: Text("Header"),decoration: BoxDecoration(color: Color(0)),),
+                  Column(
+                    children: _listMenu,
+                  )
+                ],
+              )
+          ),
+          body: SwitchBody()
+      ),
+    );
     return Scaffold(
       appBar: AppBar(
         title: Text("Sample App abc"),
@@ -75,14 +95,7 @@ class _SampleAppPageState extends State<SampleAppPage> {
           ],
         )
       ),
-      body: Center(
-        child: Column(
-          children: <Widget>[
-            SwitchMenu(),
-          ],
-          mainAxisAlignment: MainAxisAlignment.center,
-        ),
-      )
+      body: SwitchMenu()
     );
   }
 
