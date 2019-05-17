@@ -29,7 +29,7 @@ class SampleAppPage extends StatefulWidget {
   _SampleAppPageState createState() => _SampleAppPageState();
 }
 
-class _SampleAppPageState extends State<SampleAppPage> {
+class _SampleAppPageState extends State<SampleAppPage> with TickerProviderStateMixin{
   // Default placeholder text
   int _menuIndex = 0;
   List<Widget> _listMenu;
@@ -58,15 +58,35 @@ class _SampleAppPageState extends State<SampleAppPage> {
     }
   }
 
+  int TabNumber(){
+    if(_menuIndex == 2)
+      return 2;
+    return 0;
+  }
+
+  TabBar GetTabBarView(){
+    if(_menuIndex == 2){
+      return new TabBar(
+        tabs: <Widget>[
+          Tab(icon: Icon(Icons.list),),
+          Tab(icon:Icon(Icons.grid_on))
+        ],
+        controller: TabController(length: 2, vsync: this),
+        indicatorColor: Colors.white,
+      );
+    }
+    return null;
+  }
+
   @override
   Widget build(BuildContext context) {
     BuildMenu();
     return DefaultTabController(
-      length: 0,
+      length: TabNumber(),
       child: Scaffold(
           appBar: AppBar(
-            title: Text("Sample App"),
-            bottom: null,
+            title: Text("Sample App 1"),
+            bottom: GetTabBarView(),
           ),
           drawer: Drawer(
               child: ListView(
@@ -95,7 +115,7 @@ class _SampleAppPageState extends State<SampleAppPage> {
           ],
         )
       ),
-      body: SwitchMenu()
+      body: SwitchBody()
     );
   }
 
