@@ -1,7 +1,7 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/Menu/Menu.dart';
 import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
+import 'package:flutter_app/PopupHepler.dart';
 import 'package:intl/intl.dart';
 
 class MenuSecond extends Menu{
@@ -50,18 +50,9 @@ class MenuSecond extends Menu{
           RaisedButton(
             child: Text("Submit"),
             onPressed: (){
-              if(_txtName.value.text == "" || !_formKey.currentState.validate())
+              if(_txtName.text == "" || !_formKey.currentState.validate())
                 return null;
-              return showDialog(context: this.context,barrierDismissible: true,
-                  child: CupertinoAlertDialog(
-                    content: Text(_txtName.value.text),
-                    actions: <Widget>[
-                      FlatButton(
-                        child: Icon(Icons.close),
-                        onPressed: (){Navigator.of(context).pop();},
-                      )
-                    ],
-                  ));
+              return PopupHelper.showPopup(context,_txtName.text);
             },
           )
         ],

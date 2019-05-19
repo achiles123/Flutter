@@ -1,6 +1,6 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/Menu/Menu.dart';
+import 'package:flutter_app/PopupHepler.dart';
 
 class MenuThird extends Menu{
   TabController tabController;
@@ -27,19 +27,7 @@ class MenuThird extends Menu{
 
             ),
             onTap: (){
-              showDialog(
-                context: context,
-                barrierDismissible: true,
-                child: CupertinoAlertDialog(
-                  content: Text("Cicked Item $index"),
-                  actions: <Widget>[
-                    FlatButton(
-                      child: Center(child: Icon(Icons.close),),
-                      onPressed: (){Navigator.of(context).pop();},
-                    )
-                  ],
-                )
-              );
+              PopupHelper.showPopup(context,"Item clicked $index");
             },
 
           );
@@ -66,20 +54,7 @@ class MenuThird extends Menu{
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
           ),
           onTap: (){
-            showDialog(
-                context: context,
-                barrierDismissible: true,
-                child:CupertinoAlertDialog(
-                  content: Text("Clicked Item $index"),
-                  actions: <Widget>[
-                    FlatButton(
-                      child: Icon(Icons.close,color: Colors.red,),
-                      onPressed: (){Navigator.of(context).pop();},
-                    ),
-                  ],
-                )
-
-            );
+            PopupHelper.showPopup(context,"Item clicked $index");
           },
         );
       },
