@@ -33,6 +33,7 @@ class _SampleAppPageState extends State<SampleAppPage> with TickerProviderStateM
   // Default placeholder text
   int _menuIndex = 0;
   List<Widget> _listMenu;
+  TabController _tabController;
 
   void BuildMenu(){
     _listMenu = new List<Widget>();
@@ -53,7 +54,9 @@ class _SampleAppPageState extends State<SampleAppPage> with TickerProviderStateM
     switch(_menuIndex){
       case 0:return new MenuFirst();
       case 1:return new MenuSecond();
-      case 2:return new MenuThird();
+      case 2:MenuThird _menuThird = new MenuThird();
+            _menuThird.SetTabController(_tabController);
+            return _menuThird;
 
     }
   }
@@ -66,12 +69,13 @@ class _SampleAppPageState extends State<SampleAppPage> with TickerProviderStateM
 
   TabBar GetTabBarView(){
     if(_menuIndex == 2){
+      _tabController = new TabController(length: 2, vsync: this);
       return new TabBar(
         tabs: <Widget>[
           Tab(icon: Icon(Icons.list),),
           Tab(icon:Icon(Icons.grid_on))
         ],
-        controller: TabController(length: 2, vsync: this),
+        controller: _tabController,
         indicatorColor: Colors.white,
       );
     }

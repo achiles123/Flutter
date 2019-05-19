@@ -3,10 +3,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app/Menu/Menu.dart';
 
 class MenuThird extends Menu{
+  TabController tabController;
+  BuildContext _context;
   @override
   Widget build(BuildContext context) {
     // TODO: implement build
+    _context = context;
     return GetBody();
+  }
+
+  void SetTabController(TabController value){
+    tabController = value;
   }
 
   Widget GetListView(){
@@ -34,6 +41,7 @@ class MenuThird extends Menu{
                 )
               );
             },
+
           );
         },
 
@@ -43,9 +51,15 @@ class MenuThird extends Menu{
   Widget GetGridView(){
     return GridView.builder(
       itemCount: 100,
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3),
+
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: MediaQuery.of(_context).orientation == Orientation.portrait?3:2,
+        childAspectRatio: MediaQuery.of(_context).size.width /(MediaQuery.of(_context).size.height/2 ),
+
+      ),
       itemBuilder: (BuildContext context,int index){
         return new GestureDetector(
+
           child: Card(
             child: Container(child: Text("Item $index"),alignment: Alignment.center,),
             elevation: 3,
@@ -76,7 +90,7 @@ class MenuThird extends Menu{
   Widget GetBody() {
     // TODO: implement GetBody
     return TabBarView(
-      controller: TabController(length: 2),
+      controller: tabController,
       children: <Widget>[
         GetListView(),
         GetGridView(),
