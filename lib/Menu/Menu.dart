@@ -10,8 +10,7 @@ class Menu extends StatelessWidget{
     return   Center(
       child: Column(
         children: <Widget>[
-          GetBody(),
-        ],
+          GetBody(),       ],
         mainAxisAlignment: MainAxisAlignment.center,
       ),
     );

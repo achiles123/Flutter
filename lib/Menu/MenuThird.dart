@@ -5,10 +5,14 @@ import 'package:flutter_app/PopupHepler.dart';
 class MenuThird extends Menu{
   TabController tabController;
   BuildContext _context;
+  List<String> items;
+  Function removeItem;
+
   @override
   Widget build(BuildContext context) {
     // TODO: implement build
     _context = context;
+    items = List.generate(100, (i)=> "Time"+i.toString());
     return GetBody();
   }
 
@@ -20,6 +24,23 @@ class MenuThird extends Menu{
     return ListView.builder(
         itemCount: 100,
         itemBuilder: (BuildContext context,int index){
+          return Dismissible(
+            key: Key(items[index]),
+            onDismissed: (direction){
+              this.removeItem(index);
+            },
+            child: GestureDetector(
+              child: Card(
+                child: Container(child: Text("Item $index"+(index%2 == 0?" chẵn":" lẻ")),alignment: Alignment.center,),
+                elevation: 3,
+
+              ),
+              onTap: (){
+                PopupHelper.showPopup(context,"Item clicked $index");
+              },
+
+            ),
+          );
           return new GestureDetector(
             child: Card(
               child: Container(child: Text("Item $index"),alignment: Alignment.center,),
@@ -47,7 +68,6 @@ class MenuThird extends Menu{
       ),
       itemBuilder: (BuildContext context,int index){
         return new GestureDetector(
-
           child: Card(
             child: Container(child: Text("Item $index"),alignment: Alignment.center,),
             elevation: 3,
