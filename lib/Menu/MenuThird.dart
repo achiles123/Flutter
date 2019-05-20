@@ -12,7 +12,7 @@ class MenuThird extends Menu{
   Widget build(BuildContext context) {
     // TODO: implement build
     _context = context;
-    items = List.generate(100, (i)=> "Time"+i.toString());
+    items = List<String>.generate(100, (i) => "Item ${i + 1}");
     return GetBody();
   }
 
@@ -24,10 +24,19 @@ class MenuThird extends Menu{
     return ListView.builder(
         itemCount: 100,
         itemBuilder: (BuildContext context,int index){
+          String key = items[index];
           return Dismissible(
-            key: Key(items[index]),
+            key: Key(key),
+
             onDismissed: (direction){
-              this.removeItem(index);
+              if (direction == DismissDirection.startToEnd) {
+                /// edit item
+                return false;
+              } else if (direction == DismissDirection.endToStart) {
+                /// delete
+                this.removeItem(index);
+                return true;
+              }
             },
             child: GestureDetector(
               child: Card(

@@ -57,8 +57,8 @@ class _SampleAppPageState extends State<SampleAppPage> with TickerProviderStateM
       case 2:MenuThird _menuThird = new MenuThird();
             _menuThird.removeItem = (index){
               setState(() {
+                _menuThird.items.removeAt(index);
               });
-              _menuThird.items.removeAt(index);
             };
             _menuThird.SetTabController(_tabController);
             return _menuThird;
