@@ -18,6 +18,7 @@ class SampleApp extends StatelessWidget {
         primarySwatch: Colors.blue,
       ),
       home: SampleAppPage(),
+
     );
   }
 }
@@ -33,7 +34,6 @@ class _SampleAppPageState extends State<SampleAppPage> with TickerProviderStateM
   // Default placeholder text
   int _menuIndex = 0;
   List<Widget> _listMenu;
-  TabController _tabController;
 
   void BuildMenu(){
     _listMenu = new List<Widget>();
@@ -69,13 +69,12 @@ class _SampleAppPageState extends State<SampleAppPage> with TickerProviderStateM
 
   TabBar GetTabBarView(){
     if(_menuIndex == 2){
-      _tabController = new TabController(length: 2, vsync: this);
       return new TabBar(
         tabs: <Widget>[
           Tab(icon: Icon(Icons.list),),
           Tab(icon:Icon(Icons.grid_on))
         ],
-        controller: _tabController,
+        controller: TabController(length: 2, vsync: this),
         indicatorColor: Colors.white,
       );
     }

@@ -20,7 +20,6 @@ class MenuSecond extends Menu{
             controller: _txtName,
             autofocus: true,
             autovalidate: true,
-            obscureText: true,
             keyboardType: TextInputType.numberWithOptions(),
             validator: (value){
               var result = int.tryParse(value);
@@ -52,12 +51,31 @@ class MenuSecond extends Menu{
             onPressed: (){
               if(_txtName.text == "" || !_formKey.currentState.validate())
                 return null;
-              return PopupHelper.showPopup(context,_txtName.text);
+              Navigator.of(context).push(MaterialPageRoute(builder: (context)=>DetailScreen(message:_txtName.text)));
             },
           )
         ],
       ),
     );
   }
+}
+
+class DetailScreen extends StatelessWidget{
+  String message;
+  DetailScreen({@required String this.message}){
+  }
+  @override
+  Widget build(BuildContext context) {
+    // TODO: implement build
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Chi tiet"),
+        leading: new Container(),
+      ),
+      body: Text(message),
+      floatingActionButton: FloatingActionButton(onPressed: (){Navigator.of(context).pop();},child: Icon(Icons.arrow_back),tooltip: "Tro lai",),
+    );
+  }
+
 }
 

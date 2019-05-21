@@ -8,8 +8,7 @@ class MenuThird extends StatefulWidget{
 
 }
 
-class MenuThirdState extends State<MenuThird>{
-  TabController tabController;
+class MenuThirdState extends State<MenuThird> with TickerProviderStateMixin{
   BuildContext _context;
   List<String> items = List<String>.generate(100, (i) => "Item ${i + 1}");
   @override
@@ -17,9 +16,7 @@ class MenuThirdState extends State<MenuThird>{
     this._context = context;
     return this.GetBody();
   }
-  void SetTabController(TabController value){
-    tabController = value;
-  }
+
 
   Widget GetListView(){
     return ListView.builder(
@@ -90,7 +87,7 @@ class MenuThirdState extends State<MenuThird>{
   Widget GetBody() {
     // TODO: implement GetBody
     return TabBarView(
-      controller: tabController,
+      controller: TabController(length: 2, vsync: this),
       children: <Widget>[
         GetListView(),
         GetGridView(),
