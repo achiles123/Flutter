@@ -2,57 +2,41 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app/Menu/Menu.dart';
 import 'package:flutter_app/PopupHepler.dart';
 
-class MenuThird extends Menu{
+class MenuThird extends StatefulWidget{
+  @override
+  MenuThirdState createState() => new MenuThirdState();
+
+}
+
+class MenuThirdState extends State<MenuThird>{
   TabController tabController;
   BuildContext _context;
-  List<String> items;
-  Function removeItem;
-
+  List<String> items = List<String>.generate(100, (i) => "Item ${i + 1}");
   @override
   Widget build(BuildContext context) {
-    // TODO: implement build
-    _context = context;
-    items = List<String>.generate(100, (i) => "Item ${i + 1}");
-    return GetBody();
+    this._context = context;
+    return this.GetBody();
   }
-
   void SetTabController(TabController value){
     tabController = value;
   }
 
   Widget GetListView(){
     return ListView.builder(
-        itemCount: 100,
-        itemBuilder: (BuildContext context,int index){
-          String key = items[index];
-          return Dismissible(
-            key: Key(key),
+      itemCount: items.length,
+      itemBuilder: (BuildContext context,int index){
+        String key = items[index];
+        return Dismissible(
+          key: Key(key),
 
-            onDismissed: (direction){
-              if (direction == DismissDirection.startToEnd) {
-                /// edit item
-                return false;
-              } else if (direction == DismissDirection.endToStart) {
-                /// delete
-                this.removeItem(index);
-                return true;
-              }
-            },
-            child: GestureDetector(
-              child: Card(
-                child: Container(child: Text("Item $index"+(index%2 == 0?" chẵn":" lẻ")),alignment: Alignment.center,),
-                elevation: 3,
-
-              ),
-              onTap: (){
-                PopupHelper.showPopup(context,"Item clicked $index");
-              },
-
-            ),
-          );
-          return new GestureDetector(
+          onDismissed: (direction){
+            setState(() {
+              items.removeAt(index);
+            });
+          },
+          child: GestureDetector(
             child: Card(
-              child: Container(child: Text("Item $index"),alignment: Alignment.center,),
+              child: Container(child: Text(items[index]+(index%2 == 0?" chẵn":" lẻ")),alignment: Alignment.center,),
               elevation: 3,
 
             ),
@@ -60,8 +44,20 @@ class MenuThird extends Menu{
               PopupHelper.showPopup(context,"Item clicked $index");
             },
 
-          );
-        },
+          ),
+        );
+        return new GestureDetector(
+          child: Card(
+            child: Container(child: Text("Item $index"),alignment: Alignment.center,),
+            elevation: 3,
+
+          ),
+          onTap: (){
+            PopupHelper.showPopup(context,"Item clicked $index");
+          },
+
+        );
+      },
 
     );
   }
