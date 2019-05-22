@@ -3,19 +3,35 @@ import 'package:flutter_app/Menu/Menu.dart';
 import 'package:flutter_app/PopupHepler.dart';
 
 class MenuThird extends StatefulWidget{
+  TabController tabController;
   @override
   MenuThirdState createState() => new MenuThirdState();
+  void SetTabController(TabController tabController){
+    this.tabController = tabController;
+  }
 
 }
 
-class MenuThirdState extends State<MenuThird> with TickerProviderStateMixin{
+class MenuThirdState extends State<MenuThird> with TickerProviderStateMixin {
   BuildContext _context;
   List<String> items = List<String>.generate(100, (i) => "Item ${i + 1}");
+  Animation<double> _animation;
+  AnimationController _animationController;
+
+  @override
+  void initState(){
+    super.initState();
+    _animationController = new AnimationController(vsync: this,duration: Duration(seconds: 2));
+    _animationController.repeat();
+  }
+
   @override
   Widget build(BuildContext context) {
     this._context = context;
+
     return this.GetBody();
   }
+
 
 
   Widget GetListView(){
@@ -60,6 +76,7 @@ class MenuThirdState extends State<MenuThird> with TickerProviderStateMixin{
   }
 
   Widget GetGridView(){
+    var animation = Tween(begin: 0.0,end: 2*3.14).animate(_animationController);
     return GridView.builder(
       itemCount: 100,
 
@@ -69,16 +86,22 @@ class MenuThirdState extends State<MenuThird> with TickerProviderStateMixin{
 
       ),
       itemBuilder: (BuildContext context,int index){
-        return new GestureDetector(
-          child: Card(
-            child: Container(child: Text("Item $index"),alignment: Alignment.center,),
-            elevation: 3,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
-          ),
-          onTap: (){
-            PopupHelper.showPopup(context,"Item clicked $index");
-          },
-        );
+        return AnimatedBuilder(
+            animation:animation ,
+            child: GestureDetector(
+                child: Card(
+                    child: Container(child: Text("Item $index"),alignment: Alignment.center,),
+                    elevation: 3,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
+                 ),
+                onTap: (){
+                  PopupHelper.showPopup(context,"Item clicked $index");
+                },
+            ),
+            builder: (context,child){
+              return Transform.rotate(angle: animation.value,child: child,);
+            });
+
       },
     );
   }
@@ -87,7 +110,7 @@ class MenuThirdState extends State<MenuThird> with TickerProviderStateMixin{
   Widget GetBody() {
     // TODO: implement GetBody
     return TabBarView(
-      controller: TabController(length: 2, vsync: this),
+      controller: this.widget.tabController,
       children: <Widget>[
         GetListView(),
         GetGridView(),

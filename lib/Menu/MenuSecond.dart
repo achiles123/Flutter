@@ -39,6 +39,12 @@ class MenuSecond extends Menu{
             ),
 
           ),
+          Row(
+            children: <Widget>[
+              Text("Return message"),
+
+            ],
+          ),
           DateTimePickerFormField(
             inputType: InputType.both,
             editable: false,
@@ -48,10 +54,11 @@ class MenuSecond extends Menu{
           ),
           RaisedButton(
             child: Text("Submit"),
-            onPressed: (){
+            onPressed: () async {
               if(_txtName.text == "" || !_formKey.currentState.validate())
                 return null;
-              Navigator.of(context).push(MaterialPageRoute(builder: (context)=>DetailScreen(message:_txtName.text)));
+              var result = await  Navigator.of(context).push(MaterialPageRoute(builder: (context)=>DetailScreen(message:_txtName.text)));
+              Scaffold.of(context).showSnackBar(SnackBar(content: Text(result),duration: Duration(seconds: 1),));
             },
           )
         ],
@@ -73,7 +80,7 @@ class DetailScreen extends StatelessWidget{
         leading: new Container(),
       ),
       body: Text(message),
-      floatingActionButton: FloatingActionButton(onPressed: (){Navigator.of(context).pop();},child: Icon(Icons.arrow_back),tooltip: "Tro lai",),
+      floatingActionButton: FloatingActionButton(onPressed: (){Navigator.of(context).pop("Return");},child: Icon(Icons.arrow_back),tooltip: "Tro lai",),
     );
   }
 
