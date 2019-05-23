@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:english_words/english_words.dart';
-import 'package:flutter_app/Menu/Menu.dart';
+import 'package:flutter_app/Menu/MenuLib.dart';
 
 void main() {
   runApp(SampleApp());
@@ -38,7 +38,7 @@ class _SampleAppPageState extends State<SampleAppPage> with TickerProviderStateM
 
   void BuildMenu(){
     _listMenu = new List<Widget>();
-    for(int i=0;i<3;i++){
+    for(int i=0;i<4;i++){
       _listMenu.add(new ListTile(
         title: Text("Menu $i"),
         onTap: (){
@@ -58,6 +58,7 @@ class _SampleAppPageState extends State<SampleAppPage> with TickerProviderStateM
       case 2:MenuThird _menuThird = new MenuThird();
             _menuThird.SetTabController(_tabController);
             return _menuThird;
+      case 3:return new MenuFour();
 
     }
   }
