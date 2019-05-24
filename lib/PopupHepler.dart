@@ -2,12 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 
 class PopupHelper {
-  static String _msg;
-  PopupHelper(String message){
-    _msg = message;
+  BuildContext _context;
+  PopupHelper(BuildContext context){
+    _context = context;
   }
 
-  static void showPopup(BuildContext context,String message) {
+  void showPopup({BuildContext context,String message}) {
+    if(context != null){
+      _context = context;
+    }
     // TODO: implement build
     showDialog(context: context,barrierDismissible: true,
         child: CupertinoAlertDialog(
@@ -16,7 +19,7 @@ class PopupHelper {
             FlatButton(
               child: Icon(Icons.close),
               onPressed: (){
-                Navigator.of(context).pop();
+                Navigator.of(_context).pop();
               },
             ),
           ],

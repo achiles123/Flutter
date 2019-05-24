@@ -9,7 +9,7 @@ class IsolateFlow{
   Future startIsolate() async {
     ReceivePort receivePort = new ReceivePort();
     _isolate = await Isolate.spawn(runTimer, receivePort.sendPort);
-    _sendPort.send(data);
+    _sendPort.send("");
     _sendPort = await receivePort.first;
   }
 

@@ -17,6 +17,7 @@ class MenuThirdState extends State<MenuThird> with TickerProviderStateMixin {
   List<String> items = List<String>.generate(100, (i) => "Item ${i + 1}");
   Animation<double> _animation;
   AnimationController _animationController;
+  PopupHelper _popup;
 
   @override
   void initState(){
@@ -28,7 +29,7 @@ class MenuThirdState extends State<MenuThird> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     this._context = context;
-
+    _popup = new PopupHelper(context);
     return this.GetBody();
   }
 
@@ -54,21 +55,10 @@ class MenuThirdState extends State<MenuThird> with TickerProviderStateMixin {
 
             ),
             onTap: (){
-              PopupHelper.showPopup(context,"Item clicked $index");
+              _popup.showPopup(message:"Item clicked $index");
             },
 
           ),
-        );
-        return new GestureDetector(
-          child: Card(
-            child: Container(child: Text("Item $index"),alignment: Alignment.center,),
-            elevation: 3,
-
-          ),
-          onTap: (){
-            PopupHelper.showPopup(context,"Item clicked $index");
-          },
-
         );
       },
 
@@ -95,7 +85,7 @@ class MenuThirdState extends State<MenuThird> with TickerProviderStateMixin {
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
                  ),
                 onTap: (){
-                  PopupHelper.showPopup(context,"Item clicked $index");
+                  _popup.showPopup(message:"Item clicked $index");
                 },
             ),
             builder: (context,child){
