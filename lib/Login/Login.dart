@@ -78,6 +78,15 @@ class LoginState extends State<Login>{
                             CheckLogin(_txtUsername.text,_txtPassword.text);
                           }
                         },
+                      ),
+                      GestureDetector(
+                        child: Text(
+                          "Đăng ký tài khoản.",
+                          style: TextStyle(color: Colors.blue),
+                        ),
+                        onTap: (){
+                          Navigator.of(context).pushNamed("/register");
+                        },
                       )
                     ],
                   ),
@@ -93,11 +102,10 @@ class LoginState extends State<Login>{
   void CheckLogin(String email,String password) {
     FirebaseAuth _auth = FirebaseAuth.instance;
     FirebaseUser user = null;
-    _auth.signInWithEmailAndPassword(email: email, password: password)..then((result)=>{
-      user = result
+    _auth.signInWithEmailAndPassword(email: email, password: password).then((result)=>{
+      user = result,_popup.showPopup(context: _scaffoldContext,message: "Đăng nhập thành công")
     }).catchError((onError){
-      Scaffold.of(_scaffoldContext).showSnackBar(SnackBar(content: Text(onError.message),duration: Duration(seconds: 10),));
-      return;
+      _popup.showPopup(context: _scaffoldContext,message: "Đăng nhập thất bại");
     });
   }
 }

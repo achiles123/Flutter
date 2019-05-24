@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:english_words/english_words.dart';
 
 import 'Login/Login.dart';
+import 'Register/Register.dart';
 
 void main() {
   runApp(CompareApp());
@@ -16,7 +17,8 @@ class CompareApp extends StatelessWidget {
     return MaterialApp(
       initialRoute: "/",
       routes: <String,WidgetBuilder>{
-        "/":(context) => new Login()
+        "/":(context) => new Login(),
+        "/register":(context) => new Register()
       },
     );
   }
