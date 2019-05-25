@@ -55,7 +55,7 @@ class MenuThirdState extends State<MenuThird> with TickerProviderStateMixin {
 
             ),
             onTap: (){
-              _popup.showPopup(message:"Item clicked $index");
+              _popup.ShowPopup(message:"Item clicked $index");
             },
 
           ),
@@ -85,7 +85,7 @@ class MenuThirdState extends State<MenuThird> with TickerProviderStateMixin {
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
                  ),
                 onTap: (){
-                  _popup.showPopup(message:"Item clicked $index");
+                  _popup.ShowPopup(message:"Item clicked $index");
                 },
             ),
             builder: (context,child){

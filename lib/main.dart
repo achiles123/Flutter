@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:english_words/english_words.dart';
 
+import 'Home/Home.dart';
 import 'Login/Login.dart';
 import 'Register/Register.dart';
 
@@ -18,7 +19,8 @@ class CompareApp extends StatelessWidget {
       initialRoute: "/",
       routes: <String,WidgetBuilder>{
         "/":(context) => new Login(),
-        "/register":(context) => new Register()
+        "/register":(context) => new Register(),
+        "/home":(context) => new Home()
       },
     );
   }

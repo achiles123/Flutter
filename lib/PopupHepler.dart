@@ -7,12 +7,12 @@ class PopupHelper {
     _context = context;
   }
 
-  void showPopup({BuildContext context,String message}) {
+  void ShowPopup({BuildContext context,String message}) {
     if(context != null){
       _context = context;
     }
     // TODO: implement build
-    showDialog(context: context,barrierDismissible: true,
+    showDialog(context: _context,barrierDismissible: true,
         child: CupertinoAlertDialog(
           content: Text(message),
           actions: <Widget>[
