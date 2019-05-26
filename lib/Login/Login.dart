@@ -28,7 +28,6 @@ class LoginState extends State<Login>{
   Widget build(BuildContext context){
 
     return Scaffold(
-        resizeToAvoidBottomInset: false,
         body: Builder(builder: (BuildContext context){
           return Container(
             decoration: BoxDecoration(

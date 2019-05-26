@@ -28,16 +28,21 @@ class HomeState extends State<Home>{
     return WillPopScope(
       onWillPop: () async => FirebaseAuth.instance.currentUser() == null?true:false,
       child: Scaffold(
+        resizeToAvoidBottomInset: false,
         appBar: AppBar(
-          leading: Container(
-            alignment: Alignment.centerRight,
-            child: GestureDetector(
+          leading: Card(
+            color: Colors.blue,
+            shape: OutlineInputBorder(borderSide: BorderSide(style: BorderStyle.none)),
+            elevation: 0,
+            borderOnForeground: true,
+            child: InkWell(
               child: Icon(Icons.assignment_ind),
+              highlightColor: Colors.deepPurpleAccent,
               onTap: (){
                 _user.EditPopup();
               },
             ),
-          ),
+          ),// User Information
 
           actions: <Widget>[
             Row(
@@ -62,7 +67,7 @@ class HomeState extends State<Home>{
                     )
                 )
               ],
-            ),
+            ), // Search Field
 
           ],
         ),
