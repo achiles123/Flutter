@@ -27,20 +27,20 @@ class WelcomSplashState extends State<WelcomeSplash> with TickerProviderStateMix
 
       });
     };
-    _animationController = AnimationController(vsync: this,duration: Duration(milliseconds: 1500));
+   /* _animationController = AnimationController(vsync: this,duration: Duration(milliseconds: 1500));
     _animation = new CurvedAnimation(parent: _animationController, curve: Curves.easeOut);
     _animation.addListener(() => this.setState(() {}));
     _animationController.forward();
     setState(() {
       _visible = !_visible;
-    });
-    /*_videoPlayerController = VideoPlayerController.asset("assets/video/welcomevid.mp4")
+    });*/
+    _videoPlayerController = VideoPlayerController.asset("assets/video/welcomevid.mp4")
     ..addListener(listener)
     ..setVolume(0)
     ..initialize()
     ..play();
 
-    _videoPlayerController.play();*/
+    _videoPlayerController.play();
 
   }
   
@@ -53,7 +53,7 @@ class WelcomSplashState extends State<WelcomeSplash> with TickerProviderStateMix
         body: Stack(
           fit: StackFit.expand,
           children: <Widget>[
-            Column(
+            /*Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
                 Image.asset("assets/image/end_game.jpg",
@@ -61,9 +61,13 @@ class WelcomSplashState extends State<WelcomeSplash> with TickerProviderStateMix
                   height: _animation.value * MediaQuery.of(context).size.height,
                   width: _animation.value * MediaQuery.of(context).size.width),
               ],
-            ),
-
+            ),*/
+            AspectRatio(
+              aspectRatio: 9/16,
+              child: VideoPlayer(_videoPlayerController)
+            )
           ],
+
         ),
       ),
     ) ;

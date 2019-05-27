@@ -17,7 +17,15 @@ class CompareApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      initialRoute: "/",
+      color: Colors.black,
+      theme: ThemeData(
+        primaryColor: Colors.white,
+        accentColor: Colors.deepOrangeAccent,
+        textTheme: TextTheme(
+          body1: TextStyle(color: Colors.black)
+        ),
+      ),
+      initialRoute: "/home",
       routes: <String,WidgetBuilder>{
         "/":(context) => new Login(),
         "/plash_screen": (context) => new WelcomeSplash(),

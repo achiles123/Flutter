@@ -30,11 +30,53 @@ class HomeState extends State<Home>{
     // TODO: implement build
     return WillPopScope(
       onWillPop: () async => FirebaseAuth.instance.currentUser() == null?true:false,
-      child: Scaffold(
+      child:DefaultTabController(
+          length: 3,
+          child: Scaffold(
+            appBar: AppBar(
+              leading: Container(),
+              bottom: TabBar(
+                labelColor: Colors.deepOrangeAccent,
+                unselectedLabelColor: Colors.black,
+                tabs: <Widget>[
+                  Tab(text: "Home",),
+                  Tab(text: "Đang chiếu",),
+                  Tab(text: "Sắp chiếu",),
+                ],
+              ),
+              actions: <Widget>[
+                Container(
+                    width: MediaQuery.of(context).size.width*0.5,
+                    child:TextField(
+                      controller: _txtSearch,
+                      style: TextStyle(color: Colors.white),
+                      decoration: InputDecoration(
+                        border: InputBorder.none,
+                        hintText: "Tìm kiếm",
+
+                      ),
+                      onSubmitted: (value){
+                        _popup.ShowPopup(message: value);
+                      },
+                    )
+                )
+              ],
+            ),
+            bottomNavigationBar: BottomNavigationBar(
+            currentIndex: 0,
+            selectedItemColor: Colors.deepOrangeAccent,
+            se
+            items: [
+              BottomNavigationBarItem(icon: Icon(Icons.star),title: Text("")),
+              BottomNavigationBarItem(icon: Icon(Icons.star),title: Text("")),
+            ]),
+          )
+      )
+      /*Scaffold(
         resizeToAvoidBottomInset: false,
         key: _scaffoldKey,
         appBar: AppBar(
-          leading:Row(
+          *//*leading:Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: <Widget>[
               InkWell(
@@ -53,7 +95,7 @@ class HomeState extends State<Home>{
                 },
               ),// User Information
             ],
-          ),
+          ),*//*
           actions: <Widget>[
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -88,7 +130,7 @@ class HomeState extends State<Home>{
             ],
           ),
         ),
-      ),
+      ),*/
     );
   }
 }
