@@ -13,6 +13,8 @@ class HomeState extends State<Home>{
   TextEditingController _txtSearch;
   PopupHelper _popup;
   User _user;
+  GlobalKey<ScaffoldState> _scaffoldKey;
+
   @override
   void initState() {
     // TODO: implement initState
@@ -20,6 +22,7 @@ class HomeState extends State<Home>{
     _txtSearch = new TextEditingController();
     _popup = new PopupHelper(context);
     _user = new User(context);
+    _scaffoldKey = new GlobalKey<ScaffoldState>();
   }
 
   @override
@@ -29,21 +32,28 @@ class HomeState extends State<Home>{
       onWillPop: () async => FirebaseAuth.instance.currentUser() == null?true:false,
       child: Scaffold(
         resizeToAvoidBottomInset: false,
+        key: _scaffoldKey,
         appBar: AppBar(
-          leading: Card(
-            color: Colors.blue,
-            shape: OutlineInputBorder(borderSide: BorderSide(style: BorderStyle.none)),
-            elevation: 0,
-            borderOnForeground: true,
-            child: InkWell(
-              child: Icon(Icons.assignment_ind),
-              highlightColor: Colors.deepPurpleAccent,
-              onTap: (){
-                _user.EditPopup();
-              },
-            ),
-          ),// User Information
-
+          leading:Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: <Widget>[
+              InkWell(
+                child: Icon(Icons.menu),
+                highlightColor: Colors.deepPurpleAccent,
+                onTap: (){
+                  _scaffoldKey.currentState.openDrawer();
+                },
+              ),// Menu,
+              Spacer(),
+              InkWell(
+                child: Icon(Icons.assignment_ind),
+                highlightColor: Colors.deepPurpleAccent,
+                onTap: (){
+                  _user.EditPopup();
+                },
+              ),// User Information
+            ],
+          ),
           actions: <Widget>[
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -70,6 +80,13 @@ class HomeState extends State<Home>{
             ), // Search Field
 
           ],
+        ),
+        drawer: Drawer(
+          child: ListView(
+            children: <Widget>[
+              ListTile(title: Text("a"),)
+            ],
+          ),
         ),
       ),
     );

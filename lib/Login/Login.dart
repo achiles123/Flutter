@@ -33,7 +33,7 @@ class LoginState extends State<Login>{
             decoration: BoxDecoration(
                 gradient: LinearGradient(
                     colors: [
-                      Color(0xffccffcc),
+                      Color(0xffffcc99),
                       Color(0xfff2f2f2),
                     ],
                     stops: [0.0, 1.0],
@@ -47,15 +47,15 @@ class LoginState extends State<Login>{
                   children: <Widget>[
                     Form(
                       key: _form,
-                      autovalidate: true,
                       child: Column(
                         children: <Widget>[
                           Container(
                             child: Text("ĐĂNG NHẬP",style: TextStyle(color: Colors.blue,fontSize:30,fontWeight: FontWeight.w400,fontFamily: "Lobster"),),
                             margin: EdgeInsets.only(bottom: 20),
                           ),
-                          Container(
+                           Container(
                             width: MediaQuery.of(context).size.width * 0.7,
+                            height: 35,
                             margin: EdgeInsets.only(bottom: 10),
                             child: TextFormField(
                               controller: _txtUsername,
@@ -64,6 +64,7 @@ class LoginState extends State<Login>{
                               decoration: InputDecoration(
                                   enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.blue)),
                                   border: const OutlineInputBorder(borderSide: BorderSide(color: Colors.blue)),
+                                  contentPadding: EdgeInsets.all(0),
                                   labelText: "Email",
                                   labelStyle: TextStyle(color: Colors.blue),
                                   prefixIcon: Icon(Icons.email,color: Colors.blue,)
@@ -81,6 +82,7 @@ class LoginState extends State<Login>{
                           ),// Email
                           Container(
                             width: MediaQuery.of(context).size.width * 0.7,
+                            height: 35,
                             margin: EdgeInsets.only(bottom: 10),
                             child: TextFormField(
                               controller: _txtPassword,
@@ -88,6 +90,7 @@ class LoginState extends State<Login>{
                               decoration: InputDecoration(
                                 enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.blue)),
                                 border: const OutlineInputBorder(borderSide: BorderSide(color: Colors.blue)),
+                                contentPadding: EdgeInsets.all(0),
                                 labelText: "Mật khẩu",
                                 labelStyle: TextStyle(color: Colors.blue),
                                 prefixIcon: Icon(Icons.keyboard_hide,color: Colors.blue),
@@ -145,7 +148,7 @@ class LoginState extends State<Login>{
     _auth.signInWithEmailAndPassword(email: email, password: password).then((result)=>{
       user = result,
       _popup.ShowPopup(context: _scaffoldContext,message: "Đăng nhập thành công"),
-      Navigator.of(context).popAndPushNamed("/home")
+      Navigator.of(context).popAndPushNamed("/plash_screen")
     }).catchError((onError){
       _popup.ShowPopup(context: _scaffoldContext,message: "Đăng nhập thất bại");
     });

@@ -27,19 +27,20 @@ class RegisterState extends State<Register>{
   @override
   Widget build(BuildContext context){
     return Scaffold(
+        resizeToAvoidBottomPadding: false,
         body: Builder(builder: (BuildContext context){
           return  Container(
             decoration: BoxDecoration(
-                gradient: LinearGradient(
-                    colors: [
-                      Color(0xffccffcc),
-                      Color(0xfff2f2f2),
-                    ],
-                    stops: [0.0, 1.0],
-                    begin: FractionalOffset.topCenter,
-                    end: FractionalOffset.bottomCenter,
-                    tileMode: TileMode.repeated
-                ),
+              gradient: LinearGradient(
+                  colors: [
+                    Color(0xffccffcc),
+                    Color(0xfff2f2f2),
+                  ],
+                  stops: [0.0, 1.0],
+                  begin: FractionalOffset.topCenter,
+                  end: FractionalOffset.bottomCenter,
+                  tileMode: TileMode.repeated
+              ),
 
             ),
             child: Center(
@@ -47,7 +48,6 @@ class RegisterState extends State<Register>{
                   children: <Widget>[
                     Form(
                       key: _form,
-                      autovalidate: true,
                       child: Column(
                         children: <Widget>[
                           Container(
@@ -56,6 +56,7 @@ class RegisterState extends State<Register>{
                           ),
                           Container(
                             width: MediaQuery.of(context).size.width * 0.7,
+                            height: 35,
                             margin: EdgeInsets.only(bottom: 10),
                             child: TextFormField(
                               controller: _txtUsername,
@@ -64,6 +65,7 @@ class RegisterState extends State<Register>{
                               decoration: InputDecoration(
                                 enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.blue)),
                                 border: const OutlineInputBorder(borderSide: BorderSide(color: Colors.blue)),
+                                contentPadding: EdgeInsets.all(0),
                                 labelText: "Email",
                                 labelStyle: TextStyle(color: Colors.blue),
                                 prefixIcon: Icon(Icons.email,color: Colors.blue,),
@@ -82,6 +84,7 @@ class RegisterState extends State<Register>{
                           ),// Email
                           Container(
                             width: MediaQuery.of(context).size.width * 0.7,
+                            height: 35,
                             margin: EdgeInsets.only(bottom: 10),
                             child: TextFormField(
                               controller: _txtPassword,
@@ -89,6 +92,7 @@ class RegisterState extends State<Register>{
                               decoration: InputDecoration(
                                 enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.blue)),
                                 border: const OutlineInputBorder(borderSide: BorderSide(color: Colors.blue)),
+                                contentPadding: EdgeInsets.all(0),
                                 labelText: "Mật khẩu",
                                 labelStyle: TextStyle(color: Colors.blue),
                                 prefixIcon: Icon(Icons.keyboard_hide,color: Colors.blue),
@@ -101,12 +105,14 @@ class RegisterState extends State<Register>{
                           ),// Password
                           Container(
                             width: MediaQuery.of(context).size.width * 0.7,
+                            height: 35,
                             margin: EdgeInsets.only(bottom: 10),
                             child: TextFormField(
                               obscureText: true,
                               decoration: InputDecoration(
                                 enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.blue)),
                                 border: const OutlineInputBorder(borderSide: BorderSide(color: Colors.blue)),
+                                contentPadding: EdgeInsets.all(0),
                                 labelText: "Nhập lại mật khẩu",
                                 labelStyle: TextStyle(color: Colors.blue),
                                 prefixIcon: Icon(Icons.repeat,color: Colors.blue),
