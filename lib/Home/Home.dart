@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_app/Model/Movie.dart';
 import 'package:flutter_app/Model/User.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
@@ -16,6 +17,7 @@ class HomeState extends State<Home>{
   User _user;
   GlobalKey<ScaffoldState> _scaffoldKey;
   int _bottomIndex;
+  int _starIndex;
 
   @override
   void initState() {
@@ -26,6 +28,25 @@ class HomeState extends State<Home>{
     _user = new User(context);
     _scaffoldKey = new GlobalKey<ScaffoldState>();
     _bottomIndex = 0;
+  }
+
+   StarBody() async {
+    switch(_starIndex){
+      case 0:
+        Movie movie = new Movie();
+        List<Movie> data = await movie.GetMoviePlaying();
+        return ListView.builder(
+            itemCount: data.length,
+            itemBuilder: (context,index){
+              return ListTile(title: Text(data[index].film_name),);
+            });
+    }
+  }
+
+   BodyData() async {
+    switch(_bottomIndex){
+      case 0:_starIndex = 0; return await StarBody();
+    }
   }
 
   @override
@@ -84,7 +105,7 @@ class HomeState extends State<Home>{
                   });
                 },
               ),
-
+              body: BodyData(),
             )
         )
       /*Scaffold(

@@ -1,4 +1,6 @@
+import 'dart:convert';
 
+import 'package:http/http.dart' as http;
 class Movie{
   final int avg_point;
   final int avg_point_all;
@@ -73,6 +75,21 @@ class Movie{
       total_rating: json["total_rating"],
       type_id: json["type_id"],
     );
+  }
+
+  Future<List<Movie>> GetMoviePlaying() async {
+
+    var list = await http.post(
+        "https://123phim.vn/apitomapp",
+        headers: {"Content-Type": "application/json"},
+        body:'{"param":{"url":"/film/list?status=2","keyCache":"showing-film"},"method":"GET"}'
+    ).then((http.Response response){
+      if(response.statusCode == 200){
+        Iterable originData = json.decode(response.body)["result"];
+        return originData.map((x)=> Movie.parseJson(x)).toList();
+      }
+    });
+    return list;
   }
 
 }
