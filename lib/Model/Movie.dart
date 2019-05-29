@@ -8,7 +8,7 @@ class Movie{
   final String count_comment;
   final String count_like;
   final String count_share;
-  final double film_age;
+  final int film_age;
   final double film_duration;
   final double film_id;
   final String film_language;
@@ -49,7 +49,7 @@ class Movie{
       count_comment: json["count_comment"],
       count_like: json["count_like"],
       count_share: json["count_share"],
-      film_age: double.parse(json["film_age"].toString()),
+      film_age: int.parse(json["film_age"].toString()),
       film_duration: double.parse(json["film_duration"].toString()),
       film_id: double.parse(json["film_id"].toString()),
       film_language: json["film_language"],
