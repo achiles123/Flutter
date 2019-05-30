@@ -22,6 +22,10 @@ class HomeState extends State<Home> with TickerProviderStateMixin{
   GlobalKey<RefreshIndicatorState> _refreshKey;
   TabController _starBarController;
   int _bottomIndex;
+  HomeView _homeView;
+  MoviePlayingView _moviePlayingView;
+  MovieComingView _movieComingView;
+
 
   @override
   void initState() {
@@ -45,12 +49,15 @@ class HomeState extends State<Home> with TickerProviderStateMixin{
   }
 
   Widget StarBody() {
+    _homeView = _homeView == null?new HomeView():_homeView;
+    _moviePlayingView = _moviePlayingView == null?new MoviePlayingView():_moviePlayingView;
+    _movieComingView = _movieComingView == null?new MovieComingView():_movieComingView;
     return TabBarView(
       controller: _starBarController,
       children: <Widget>[
-        new HomeView(),
-        new MoviePlayingView(),
-        new MovieComingView()
+        _homeView,
+        _moviePlayingView,
+        _movieComingView
       ],
     );
   }
