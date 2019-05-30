@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_app/Model/Movie.dart';
 import 'package:flutter_app/Model/User.dart';
 import 'package:flutter_app/Views/StarView/HomeView.dart';
+import 'package:flutter_app/Views/StarView/MovieComingView.dart';
 import 'package:flutter_app/Views/StarView/MoviePlayingView.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
@@ -49,7 +50,7 @@ class HomeState extends State<Home> with TickerProviderStateMixin{
       children: <Widget>[
         new HomeView(),
         new MoviePlayingView(),
-        new Container()
+        new MovieComingView()
       ],
     );
   }

@@ -91,6 +91,22 @@ class Movie{
       }
     });
     return result;
-}
+  }
+
+  Future<List<Movie>> GetMovieComing()  async {
+
+    var result = await http.post(
+        "https://123phim.vn/apitomapp",
+        headers: {"Content-Type": "application/json"},
+        body:'{"param":{"url":"/film/list?status=1","keyCache":"main-films-coming"},"method":"GET"}'
+    ).then((http.Response response){
+      if(response.statusCode == 200){
+        Iterable originData = json.decode(response.body)["result"];
+
+        return originData.map((x)=>Movie.parseJson(x)).toList();
+      }
+    });
+    return result;
+  }
 
 }

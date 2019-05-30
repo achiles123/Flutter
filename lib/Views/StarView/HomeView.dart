@@ -35,8 +35,20 @@ class HomeViewState extends State<HomeView>{
                 itemCount: data.length>3?3:data.length,
                 itemBuilder: (context,index){
                   return Container(
-                      height: MediaQuery.of(context).size.width*1.1,
+                      height: MediaQuery.of(context).size.width*1,
                       width: MediaQuery.of(context).size.width*0.8,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.2),
+                            offset: Offset(1, 3),
+                            blurRadius: 2,
+                            spreadRadius: -1,
+
+                          ),
+                        ]
+                      ),
                       margin: EdgeInsets.all(7),
                       child: Card(
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
