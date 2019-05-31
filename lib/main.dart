@@ -9,6 +9,7 @@ import 'Register/Register.dart';
 import 'SplashScreen/WelcomeSplash.dart';
 
 void main() {
+
   runApp(CompareApp());
 }
 

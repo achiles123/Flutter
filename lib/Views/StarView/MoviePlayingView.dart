@@ -59,7 +59,10 @@ class MoviePlayingState extends State<MoviePlayingView>{
                                 },
                                 child: Container(
                                   decoration: BoxDecoration(
-                                    image: DecorationImage(image: NetworkImage(widget._moviePlaying[index].poster_landscape_mobile),fit: BoxFit.fill),
+                                    image: DecorationImage(
+                                        image: NetworkImage(widget._moviePlaying[index].poster_landscape_mobile != null?widget._moviePlaying[index].poster_landscape_mobile:(widget._moviePlaying[index].poster_landscape != null?widget._moviePlaying[index].poster_landscape:widget._moviePlaying[index].poster_thumb)),
+                                        fit: BoxFit.fill
+                                    ),
                                   ),
 
                                 ),

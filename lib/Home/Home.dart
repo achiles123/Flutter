@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter_app/Model/Movie.dart';
 import 'package:flutter_app/Model/User.dart';
 import 'package:flutter_app/Views/StarView/HomeView.dart';
 import 'package:flutter_app/Views/StarView/MovieComingView.dart';
@@ -20,7 +19,7 @@ class HomeState extends State<Home> with TickerProviderStateMixin{
   User _user;
   GlobalKey<ScaffoldState> _scaffoldKey;
   GlobalKey<RefreshIndicatorState> _refreshKey;
-  TabController _starBarController;
+  TabController _barController;
   int _bottomIndex;
   HomeView _homeView;
   MoviePlayingView _moviePlayingView;
@@ -31,12 +30,13 @@ class HomeState extends State<Home> with TickerProviderStateMixin{
   void initState() {
     // TODO: implement initState
     super.initState();
+
     _txtSearch = new TextEditingController();
     _popup = new PopupHelper(context);
     _user = new User(context);
     _scaffoldKey = new GlobalKey<ScaffoldState>();
     _refreshKey = new GlobalKey<RefreshIndicatorState>();
-    _starBarController = new TabController(length: 3, vsync: this);
+    _barController = new TabController(length: 3, vsync: this);
     _bottomIndex = 0;
   }
 
@@ -53,7 +53,7 @@ class HomeState extends State<Home> with TickerProviderStateMixin{
     _moviePlayingView = _moviePlayingView == null?new MoviePlayingView():_moviePlayingView;
     _movieComingView = _movieComingView == null?new MovieComingView():_movieComingView;
     return TabBarView(
-      controller: _starBarController,
+      controller: _barController,
       children: <Widget>[
         _homeView,
         _moviePlayingView,
@@ -66,6 +66,57 @@ class HomeState extends State<Home> with TickerProviderStateMixin{
     switch(_bottomIndex){
       case 0: return StarBody();
       default: return Container();
+    }
+  }
+
+  Widget TabBarData(){
+    switch(_bottomIndex){
+      case 0:return TabBar(
+        controller: _barController,
+        labelColor: Colors.deepOrangeAccent,
+        unselectedLabelColor: Colors.grey,
+        tabs: <Widget>[
+          Tab(text: "Home",),
+          Tab(text: "Đang chiếu",),
+          Tab(text: "Sắp chiếu",),
+        ],
+      );
+      case 1:return TabBar(
+        controller: _barController,
+        labelColor: Colors.deepOrangeAccent,
+        unselectedLabelColor: Colors.grey,
+        tabs: <Widget>[
+          Tab(text: "Rạp gần đây",),
+          Tab(text: "Hệ thống rạp",),
+        ],
+      );
+      case 2:return TabBar(
+        controller: _barController,
+        labelColor: Colors.deepOrangeAccent,
+        unselectedLabelColor: Colors.grey,
+        tabs: <Widget>[
+          Tab(text: "Điện ảnh 24h",),
+          Tab(text: "Đánh giá",),
+          Tab(text: "Khuyến mãi",),
+        ],
+      );
+      case 3:return TabBar(
+        controller: _barController,
+        labelColor: Colors.deepOrangeAccent,
+        unselectedLabelColor: Colors.grey,
+        tabs: <Widget>[
+        ],
+      );
+      case 4:return TabBar(
+        controller: _barController,
+        labelColor: Colors.deepOrangeAccent,
+        unselectedLabelColor: Colors.grey,
+        tabs: <Widget>[
+          Tab(text: "Tài khoản",),
+          Tab(text: "Vé đã mua",),
+          Tab(text: "Thông báo",),
+        ],
+      );
     }
   }
 
@@ -83,16 +134,7 @@ class HomeState extends State<Home> with TickerProviderStateMixin{
                     pinned: true,
                     floating: true,
                     forceElevated: innerBoxIsScrolled,
-                    bottom: TabBar(
-                      controller: _starBarController,
-                      labelColor: Colors.deepOrangeAccent,
-                      unselectedLabelColor: Colors.grey,
-                      tabs: <Widget>[
-                        Tab(text: "Home",),
-                        Tab(text: "Đang chiếu",),
-                        Tab(text: "Sắp chiếu",),
-                      ],
-                    ),
+                    bottom: TabBarData(),
                     actions: <Widget>[
                       Container(
                           width: MediaQuery.of(context).size.width*0.5,
@@ -132,6 +174,13 @@ class HomeState extends State<Home> with TickerProviderStateMixin{
             onTap: (index){
               setState(() {
                 _bottomIndex = index;
+                switch(index){
+                  case 0:_barController = new TabController(length: 3, vsync: this);break;
+                  case 1:_barController = new TabController(length: 2, vsync: this);break;
+                  case 2:_barController = new TabController(length: 3, vsync: this);break;
+                  case 3:_barController = new TabController(length: 0, vsync: this);break;
+                  case 4:_barController = new TabController(length: 3, vsync: this);break;
+                }
               });
             },
           ),

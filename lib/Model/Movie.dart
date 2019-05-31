@@ -1,6 +1,6 @@
 import 'dart:convert';
-
 import 'package:http/http.dart' as http;
+
 class Movie{
   final double avg_point;
   final double avg_point_all;
@@ -78,7 +78,6 @@ class Movie{
   }
 
   Future<List<Movie>> GetMoviePlaying()  async {
-
     var result = await http.post(
         "https://123phim.vn/apitomapp",
         headers: {"Content-Type": "application/json"},

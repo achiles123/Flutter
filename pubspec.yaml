@@ -30,6 +30,7 @@ dependencies:
   firebase_auth: 0.11.1
   video_player: 0.10.1
   font_awesome_flutter: 8.4.0
+  ntlm: ^1.0.2
 
 dev_dependencies:
   flutter_test:
@@ -51,6 +52,8 @@ flutter:
   assets:
    - assets/video/welcomevid.mp4
    - assets/image/end_game.jpg
+   - assets/image/placeholder.png
+   - assets/image/placeholder.jpg
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.
