@@ -10,7 +10,7 @@ class Movie{
   final String count_share;
   final int film_age;
   final double film_duration;
-  final double film_id;
+  final int film_id;
   final String film_language;
   final String film_name;
   final String film_name_en;
@@ -51,7 +51,7 @@ class Movie{
       count_share: json["count_share"],
       film_age: int.parse(json["film_age"].toString()),
       film_duration: double.parse(json["film_duration"].toString()),
-      film_id: double.parse(json["film_id"].toString()),
+      film_id: int.parse(json["film_id"].toString()),
       film_language: json["film_language"],
       film_name: json["film_name"],
       film_name_en: json["film_name_en"],
@@ -75,6 +75,19 @@ class Movie{
       total_rating: double.parse(json["total_rating"].toString()),
       type_id: double.parse(json["type_id"].toString()),
     );
+  }
+
+  static Future<Movie> GetById(int movieId) async {
+    var result = await http.post(
+      "https://123phim.vn/apitomapp",
+      headers: {"Content-Type": "application/json"},
+      body: '{"param":{"url":"/film/detail?film_id='+movieId.toString()+'","keyCache":"movie-detail'+movieId.toString()+'"},"method":"GET"}'
+    ).then((response){
+      if(response.statusCode == 200){
+        Iterable originData = json.decode(response.body)["result"];
+        return originData.map((x) => Movie.parseJson(x));
+      }
+    });
   }
 
   Future<List<Movie>> GetMoviePlaying()  async {

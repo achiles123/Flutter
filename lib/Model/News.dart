@@ -20,10 +20,11 @@ class News{
   final int up_vote;
   final String url;
   final int user_like;
+  final int type_id;
 
-  News({this.date_add,this.down_vote,this.image,this.image2x,this.image_full,this.image_small,this.img_lhorizontal,this.img_shorizontal,this.news_description,this.news_id,this.news_slug,this.news_slug_new,this.news_title,this.source_id,this.total_comment,this.up_vote,this.url,this.user_like});
+  News({this.date_add,this.down_vote,this.image,this.image2x,this.image_full,this.image_small,this.img_lhorizontal,this.img_shorizontal,this.news_description,this.news_id,this.news_slug,this.news_slug_new,this.news_title,this.source_id,this.total_comment,this.up_vote,this.url,this.user_like,this.type_id});
 
-  factory News.parseJson(Map<String,dynamic> json){
+  factory News.parseJson(Map<String,dynamic> json,int type_id){
     return News(
       date_add: json["date_add"],
       down_vote: json["down_vote"],
@@ -43,10 +44,11 @@ class News{
       up_vote: json["up_vote"],
       url: json["url"],
       user_like: json["user_like"],
+      type_id: type_id,
     );
   }
 
-  Future<List<News>> GetVoucher()  async {
+  Future<List<News>> GetPromotion()  async {
     var result = await http.post(
         "https://123phim.vn/apitomapp",
         headers: {"Content-Type": "application/json"},
@@ -54,9 +56,42 @@ class News{
     ).then((http.Response response){
       if(response.statusCode == 200){
         Iterable originData = json.decode(response.body)["result"];
-        return originData.map((x)=>News.parseJson(x)).toList();
+        return originData.map((x)=>News.parseJson(x,4)).toList();
       }
     });
     return result;
   }
+
+  Future<List<News>> GetReview()  async {
+    var result = await http.post(
+        "https://123phim.vn/apitomapp",
+        headers: {"Content-Type": "application/json"},
+        body:'{"param":{"url":"/news/list?type_id=8&offset=0&count=8&is_hot=-1&p_cinema_id=0","keyCache":"news?type_id=8&offset=0&count=8&is_hot=-1&p_cinema_id=0"},"method":"GET"}'
+    ).then((http.Response response){
+      if(response.statusCode == 200){
+        Iterable originData = json.decode(response.body)["result"];
+        return originData.map((x)=>News.parseJson(x,8)).toList();
+      }
+    });
+    return result;
+  }
+
+  Future<List<News>> GetNewsMore() async{
+    var rsPromotion = await GetPromotion();
+    var result = await http.post(
+        "https://123phim.vn/apitomapp",
+        headers: {"Content-Type": "application/json"},
+        body:'{"param":{"url":"/news/list?type_id=1&offset=0&count=8&is_hot=-1&p_cinema_id=0","keyCache":"news?type_id=1&offset=0&count=8&is_hot=-1&p_cinema_id=0"},"method":"GET"}'
+    ).then((http.Response response){
+      if(response.statusCode == 200){
+        Iterable originData = json.decode(response.body)["result"];
+        return originData.map((x)=>News.parseJson(x,1)).toList();
+      }
+    });
+    if(rsPromotion.length != 0)
+      result.insert(0, rsPromotion[0]);
+    return result;
+  }
+
+
 }
