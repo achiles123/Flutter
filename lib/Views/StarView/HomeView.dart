@@ -1,8 +1,10 @@
 import 'dart:core';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/Model/Movie.dart';
 import 'package:flutter_app/Model/News.dart';
 import 'package:flutter_app/Model/Comment.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class HomeView extends StatefulWidget{
   Movie _movie;
@@ -77,7 +79,7 @@ class HomeViewState extends State<HomeView>{
                       children: <Widget>[
                         InkWell(
                           onTap: (){
-
+                            Navigator.of(context).pushNamed("/booking",arguments: widget._movieHome[index]);
                           },
                           child: Container(
                             decoration: BoxDecoration(
@@ -145,6 +147,7 @@ class HomeViewState extends State<HomeView>{
                                     color: Colors.deepOrange,
                                     onPressed: (){
 
+                                      Navigator.of(context).pushNamed("/booking",arguments: widget._movieHome[index]);
                                     },
                                   ),
                                 ),
@@ -281,7 +284,7 @@ class HomeViewState extends State<HomeView>{
 
   Future<List<Movie>> WaitMovieFetched() async {
     while(widget._movieHome == null)
-      await Future.delayed(Duration(milliseconds: 1000));
+      await Future.delayed(Duration(milliseconds: 500));
     return widget._movieHome;
   }
 
@@ -597,118 +600,180 @@ class HomeViewState extends State<HomeView>{
   }
 
   Widget GetTopComment(){
-    while(widget._movieHome == null)
-      Future.delayed(Duration(milliseconds: 1000));
-    List<int> listId = new List<int>();
-    for(int i = 0;i < widget._movieHome.length;i++){
-      if(i > 4)
-        break;
-      listId.add(widget._movieHome[i].film_id);
-    }
-    return Container(
-      margin: EdgeInsets.only(left: 7,right: 7),
-      decoration: BoxDecoration(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(5),
-      ),
-      child: FutureBuilder(
-        future: widget._topComment == null?widget._comment.GetTopComment(listId):new Future<List<Comment>>(()=>widget._topComment),
-        builder: (context,snapshot){
-          if(snapshot.connectionState == ConnectionState.waiting && widget._topComment == null)
-            return Container();
-          else{
-            if(snapshot.data != null)
-              widget._topComment = snapshot.data;
-            if(widget._topComment != null){
-              return Container(
-                height: 1100,
-                child: ListView.builder(
-                  shrinkWrap: true,
-                  physics: NeverScrollableScrollPhysics(),
-                  itemCount: widget._topComment.length > 3?3:widget._topComment.length,
-                  itemBuilder: (context,index){
+    return FutureBuilder(
+      future: WaitMovieFetched(),
+      builder: (context,snapshot){
+        if(snapshot.connectionState == ConnectionState.waiting)
+          return Container();
+        else{
+          List<int> listId = new List<int>();
+          for(int i = 0;i < widget._movieHome.length;i++){
+            if(i > 4)
+              break;
+            listId.add(widget._movieHome[i].film_id);
+          }
+          return Container(
+            margin: EdgeInsets.only(left: 7,right: 7),
+            decoration: BoxDecoration(
+              color: Colors.transparent,
+              borderRadius: BorderRadius.circular(5),
+            ),
+            child: FutureBuilder(
+              future: widget._topComment == null?widget._comment.GetTopComment(listId):new Future<List<Comment>>(()=>widget._topComment),
+              builder: (context,snapshot){
+                if(snapshot.connectionState == ConnectionState.waiting && widget._topComment == null)
+                  return Container();
+                else{
+                  if(snapshot.data != null)
+                    widget._topComment = snapshot.data;
+                  if(widget._topComment != null){
                     return Container(
-                      margin: EdgeInsets.only(top: 15),
-                      padding: EdgeInsets.all(0),
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(10),
-                          boxShadow:[
-                            BoxShadow(
-                                color: Colors.black.withOpacity(0.2),
-                                offset: Offset(3, 5),
-                                blurRadius: 5,
-                                spreadRadius: 0
-                            )
-                          ]
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          Container(
-                            height: 110,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: <Widget>[
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: <Widget>[
-                                    Text(widget._topComment[index].GetMovie().film_name_vn),
-                                    Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                      children: <Widget>[
-                                        Icon((widget._topComment[index].GetMovie().avg_point_all >= 2?Icons.star:(widget._topComment[index].GetMovie().avg_point_all<=0?Icons.star_border:Icons.star_half)),color: Colors.red,size: 10,),
-                                        Icon((widget._topComment[index].GetMovie().avg_point_all >= 4?Icons.star:(widget._topComment[index].GetMovie().avg_point_all<=2?Icons.star_border:Icons.star_half)),color: Colors.red,size: 10,),
-                                        Icon((widget._topComment[index].GetMovie().avg_point_all >= 6?Icons.star:(widget._topComment[index].GetMovie().avg_point_all<=4?Icons.star_border:Icons.star_half)),color: Colors.red,size: 10,),
-                                        Icon((widget._topComment[index].GetMovie().avg_point_all >= 8?Icons.star:(widget._topComment[index].GetMovie().avg_point_all<=6?Icons.star_border:Icons.star_half)),color: Colors.red,size: 10,),
-                                        Icon((widget._topComment[index].GetMovie().avg_point_all >= 10?Icons.star:(widget._topComment[index].GetMovie().avg_point_all<=8?Icons.star_border:Icons.star_half)),color: Colors.red,size: 10,),
-                                      ],
-                                    ),
-                                  ],
-                                ),// Movie name
-                                Spacer(),
-                                Row(
-                                  children: <Widget>[
-                                    Column(
-                                      children: <Widget>[
-
-                                      ],
-                                    ),
-                                    Container()
-                                  ],
-                                ),// User status
-                              ],
-                            )
-                          ), //Title
-                          Container(
-                            margin: EdgeInsets.only(top:5),
+                      height: 1000,
+                      child: ListView.builder(
+                        shrinkWrap: true,
+                        physics: NeverScrollableScrollPhysics(),
+                        itemCount: widget._topComment.length,
+                        itemBuilder: (context,index){
+                          return Container(
+                            margin: EdgeInsets.only(top: 15),
                             padding: EdgeInsets.all(10),
+                            width: double.infinity,
+                            decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(10),
+                                boxShadow:[
+                                  BoxShadow(
+                                      color: Colors.black.withOpacity(0.2),
+                                      offset: Offset(3, 5),
+                                      blurRadius: 5,
+                                      spreadRadius: 0
+                                  )
+                                ]
+                            ),
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: <Widget>[
+                                Container(
+                                    height: 35,
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: <Widget>[
+                                        Container(
+                                          width: MediaQuery.of(context).size.width*0.5,
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: <Widget>[
+                                              Text(widget._topComment[index].movie.film_name_vn,overflow: TextOverflow.clip,maxLines: 1,),
+                                              Row(
+                                                mainAxisAlignment: MainAxisAlignment.start,
+                                                children: <Widget>[
+                                                  Icon((widget._topComment[index].movie.avg_point>= 2?Icons.star:(widget._topComment[index].movie.avg_point<=0?Icons.star_border:Icons.star_half)),color: Colors.red,size: 10,),
+                                                  Icon((widget._topComment[index].movie.avg_point >= 4?Icons.star:(widget._topComment[index].movie.avg_point<=2?Icons.star_border:Icons.star_half)),color: Colors.red,size: 10,),
+                                                  Icon((widget._topComment[index].movie.avg_point >= 6?Icons.star:(widget._topComment[index].movie.avg_point<=4?Icons.star_border:Icons.star_half)),color: Colors.red,size: 10,),
+                                                  Icon((widget._topComment[index].movie.avg_point >= 8?Icons.star:(widget._topComment[index].movie.avg_point<=6?Icons.star_border:Icons.star_half)),color: Colors.red,size: 10,),
+                                                  Icon((widget._topComment[index].movie.avg_point >= 10?Icons.star:(widget._topComment[index].movie.avg_point<=8?Icons.star_border:Icons.star_half)),color: Colors.red,size: 10,),
+                                                ],
+                                              ),
+                                            ],
+                                          ),// Movie name
+                                        ),
+                                        Row(
+                                          children: <Widget>[
+                                            Container(
+                                              width: MediaQuery.of(context).size.width*0.25,
+                                              child: Column(
+                                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                crossAxisAlignment: CrossAxisAlignment.end,
+                                                children: <Widget>[
+                                                  Text(widget._topComment[index].guest_name,maxLines: 1,overflow: TextOverflow.clip,textAlign: TextAlign.right,style: TextStyle(fontWeight: FontWeight.w300,fontSize: 12),),
+                                                  Text("Vài giây trước",textAlign: TextAlign.right,style: TextStyle(color: Colors.black38,fontSize: 12))
 
+                                                ],
+                                              ),
+                                            ),
 
+                                            Stack(
+                                              children: <Widget>[
+                                                Container(
+                                                  width: 35,
+                                                  height: 35,
+                                                  decoration: BoxDecoration(
+                                                      borderRadius: BorderRadius.circular(50),
+                                                      image: DecorationImage(image: NetworkImage(widget._topComment[index].avatar),fit: BoxFit.fill)
+                                                  ),
+                                                ),
+                                                Positioned(
+                                                  right: 0,
+                                                  bottom: 0,
+                                                  child: Container(
+                                                    width: 17,
+                                                    height: 17,
+                                                    foregroundDecoration: BoxDecoration(
+                                                        color: Colors.transparent,
+                                                        shape: BoxShape.circle,
+                                                        image: DecorationImage(image: AssetImage((widget._topComment[index].facebook_id != ""?"assets/image/facebook.png":"assets/image/zalo.png")),fit: BoxFit.fill),
+                                                        border: Border.fromBorderSide(BorderSide(color: Colors.white,width: 2))
+                                                    ),
+                                                  ),
+                                                )
+                                              ],
+                                            )
+                                          ],
+                                        ),// User status
+                                      ],
+                                    )
+                                ), //Header
+                                Container(
+                                  height: 90,
+                                  margin: EdgeInsets.only(top: 10),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: <Widget>[
+                                      Image.network(widget._topComment[index].movie.poster_landscape,fit: BoxFit.fill,width: 75,height: 90,),
+                                      Expanded(
+                                        child: Container(
+                                          margin: EdgeInsets.only(left: 5),
+                                          child: Text(widget._topComment[index].content,maxLines: 6,overflow: TextOverflow.ellipsis,style: TextStyle(fontWeight: FontWeight.w300),),
+                                        ),
+                                      ),
+
+                                    ],
+                                  ),
+                                ),// Body
+                                Container(
+                                  width: 70,
+                                  margin: EdgeInsets.only(top: 10),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: <Widget>[
+                                      Icon(Icons.thumb_up,size: 15,color: Colors.blueAccent,),
+                                      Text(widget._topComment[index].up_vote.toString(),style: TextStyle(fontWeight: FontWeight.w300),),
+                                      Text("Thích",style: TextStyle(fontWeight: FontWeight.w300),),
+                                    ],
+                                  ),
+                                ),
                               ],
                             ),
-                          ),
-
-                        ],
+                          );
+                        },
                       ),
                     );
-                  },
-                ),
-              );
-            }else{
-              return Container();
-            }
-          }
+                  }else{
+                    return Container();
+                  }
+                }
 
-        },
-      ),
+              },
+            ),
+          );
+        }
+      },
     );
+
+
   }
 
   @override
@@ -759,10 +824,10 @@ class HomeViewState extends State<HomeView>{
                       InkWell(
                         child: Text("Xem tất cả",style: TextStyle(fontSize: 18,color: Colors.orangeAccent),),
                       ),
-                      GetTopComment()
                     ],
                   ),
                 ),
+                GetTopComment()
               ],
             ),
           ),

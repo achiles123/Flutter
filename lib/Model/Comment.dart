@@ -16,7 +16,7 @@ class Comment{
   final String guest_name;
   final String is_admin;
   final int is_buy_ticket;
-  final String list_image;
+  final List<dynamic> list_image;
   final String rate;
   final int total_chilren_comment;
   final int up_vote;
@@ -25,7 +25,7 @@ class Comment{
   final String username;
   final int vote;
   final String zalo_id;
-  Movie _movie;
+  Movie movie;
 
   Comment({this.avatar,this.comment_id,this.content,this.date_add,this.date_update,this.facebook_id,this.film_id,this.fullname,this.guest_email,this.guest_name,this.is_admin,this.is_buy_ticket,this.list_image,this.rate,this.total_chilren_comment,this.up_vote,this.user_id,this.user_like,this.username,this.vote,this.zalo_id});
 
@@ -55,11 +55,10 @@ class Comment{
     );
   }
 
-  Movie GetMovie(){
-    if(_movie == null){
-      _movie = Movie.GetById(this.film_id) as Movie;
-    }
-    return _movie;
+  Future SetMovie()async{
+    await Movie.GetById(this.film_id).then((value){
+      this.movie = value;
+    });
   }
 
   Future<List<Comment>> GetByMovie(int movieId,{int count=1000}) async {
@@ -69,20 +68,28 @@ class Comment{
         body:'{"param":{"url":"/film/comment?film_id=$movieId&offset=0&count=$count","keyCache":"no-cache"},"method":"GET"}'
     ).then((http.Response response){
       if(response.statusCode == 200){
-        Iterable originData = json.decode(response.body)["result"];
+        Iterable originData = json.decode(response.body)["result"]["comments"];
         return originData.map((x)=>Comment.parseJson(x)).toList();
       }
-    });;
+    }).catchError((error){
+
+    });
     return result;
   }
 
   Future<List<Comment>> GetTopComment(List<int> listMovie) async{
     List<Comment> result = new List<Comment>();
     for(int movieId in listMovie){
-      List<Comment> items = await GetByMovie(movieId,count: 10);
-      items.sort((item1,item2) => int.parse(item1.rate)<int.parse(item2.rate)?-1:1);
-      if(items.length != 0)
-        result.add(items[0]);
+      result = await GetByMovie(movieId,count: 10).then((items) {
+        items.sort((item1,item2) => int.parse(item1.rate)<int.parse(item2.rate)?1:-1);
+        if(items.length != 0){
+          result.add(items[0]);
+        }
+
+        return result;
+      });
+
+      await result[result.length-1].SetMovie();
     }
     return result;
   }

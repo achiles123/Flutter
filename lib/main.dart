@@ -7,6 +7,7 @@ import 'Home/Home.dart';
 import 'Login/Login.dart';
 import 'Register/Register.dart';
 import 'SplashScreen/WelcomeSplash.dart';
+import 'Views/StarView/BookingView.dart';
 
 void main() {
 
@@ -31,7 +32,8 @@ class CompareApp extends StatelessWidget {
         "/":(context) => new Login(),
         "/plash_screen": (context) => new WelcomeSplash(),
         "/register":(context) => new Register(),
-        "/home":(context) => new Home()
+        "/home":(context) => new Home(),
+        "/booking":(context) => new BookingView(),
       },
     );
   }

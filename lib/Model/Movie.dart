@@ -62,7 +62,7 @@ class Movie{
       film_version: json["film_version"],
       has_session: double.parse(json["has_session"].toString()),
       imdb_point: double.parse(json["imdb_point"].toString()),
-      is_new: double.parse(json["is_new"].toString()),
+      is_new: json.containsKey("is_new") == true?double.parse(json["is_new"].toString()):-1,
       media_id: json["media_id"],
       pg_rating: json["pg_rating"],
       poster_landscape: json["poster_landscape"],
@@ -73,7 +73,7 @@ class Movie{
       showing_date: json["showing_date"],
       status_id: double.parse(json["status_id"].toString()),
       total_rating: double.parse(json["total_rating"].toString()),
-      type_id: double.parse(json["type_id"].toString()),
+      type_id: json.containsKey("type_id") == true?double.parse(json["type_id"].toString()):-1,
     );
   }
 
@@ -84,10 +84,10 @@ class Movie{
       body: '{"param":{"url":"/film/detail?film_id='+movieId.toString()+'","keyCache":"movie-detail'+movieId.toString()+'"},"method":"GET"}'
     ).then((response){
       if(response.statusCode == 200){
-        Iterable originData = json.decode(response.body)["result"];
-        return originData.map((x) => Movie.parseJson(x));
+        return Movie.parseJson(json.decode(response.body)["result"]);
       }
     });
+    return result;
   }
 
   Future<List<Movie>> GetMoviePlaying()  async {
