@@ -1,17 +1,21 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:english_words/english_words.dart';
 
+import 'GlobalData.dart';
 import 'Home/Home.dart';
 import 'Login/Login.dart';
 import 'Register/Register.dart';
 import 'SplashScreen/WelcomeSplash.dart';
 import 'Views/StarView/BookingView.dart';
+import 'package:geolocator/geolocator.dart';
 
-void main() {
+Future main() async {
 
   runApp(CompareApp());
+  GeolocationStatus geolocationStatus  = await Geolocator().checkGeolocationPermissionStatus();
+  Position position = await Geolocator().getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+  GlobalData.locationPosition = position;
 }
 
 class CompareApp extends StatelessWidget {

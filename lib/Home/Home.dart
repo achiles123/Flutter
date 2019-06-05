@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_app/Model/User.dart';
@@ -6,6 +7,7 @@ import 'package:flutter_app/Views/StarView/MovieComingView.dart';
 import 'package:flutter_app/Views/StarView/MoviePlayingView.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
+import '../GlobalData.dart';
 import '../PopupHepler.dart';
 
 class Home extends StatefulWidget{
@@ -38,6 +40,59 @@ class HomeState extends State<Home> with TickerProviderStateMixin{
     _refreshKey = new GlobalKey<RefreshIndicatorState>();
     _barController = new TabController(length: 3, vsync: this);
     _bottomIndex = 0;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if(GlobalData.locationId == -1){
+        showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (context){
+              return CupertinoAlertDialog(
+                actions: <Widget>[
+                  Container(
+                    child: Column(
+                      children: <Widget>[
+                        Container(
+                          height: MediaQuery.of(context).size.height*0.6,
+                          child: ListView.builder(
+                            itemCount: GlobalData.locations.length,
+                            itemBuilder: (context,index){
+                              return Container(
+                                height: 30,
+                                child: Row(
+                                  children: <Widget>[
+                                    Card(
+                                      child:  Radio(
+                                        value: GlobalData.locationId == -1 && index == 0?1:(GlobalData.locationId == index?1:0),
+                                        onChanged: (value){
+                                          if(value == 1)
+                                            GlobalData.locationId = index;
+                                        },
+                                      ),
+                                    ),
+
+                                    Container(
+                                      child: Text(GlobalData.locations[index],style: TextStyle(color: Colors.black),),
+                                    )
+                                  ],
+                                ),
+                              );
+
+                            },
+                          ),
+                        ),// Location panel
+                        Container(
+                          height: 30,
+                          child: RaisedButton(onPressed: ()=> Navigator.of(context).pop()),
+                        ),// Location confirm
+                      ],
+                    ),
+                  )
+                ],
+              );
+            }
+        );
+      }
+    });
   }
 
   Future<Null> _refreshState() async{
