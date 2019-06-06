@@ -46,48 +46,63 @@ class HomeState extends State<Home> with TickerProviderStateMixin{
             context: context,
             barrierDismissible: false,
             builder: (context){
-              return CupertinoAlertDialog(
-                actions: <Widget>[
-                  Container(
-                    child: Column(
-                      children: <Widget>[
-                        Container(
-                          height: MediaQuery.of(context).size.height*0.6,
-                          child: ListView.builder(
-                            itemCount: GlobalData.locations.length,
-                            itemBuilder: (context,index){
-                              return Container(
-                                height: 30,
-                                child: Row(
-                                  children: <Widget>[
-                                    Card(
-                                      child:  Radio(
-                                        value: GlobalData.locationId == -1 && index == 0?1:(GlobalData.locationId == index?1:0),
-                                        onChanged: (value){
-                                          if(value == 1)
-                                            GlobalData.locationId = index;
-                                        },
-                                      ),
-                                    ),
+              return WillPopScope(
+                  onWillPop: () async =>false,
+                  child: Container(
+                      height: MediaQuery.of(context).size.height-50,
+                      width: MediaQuery.of(context).size.width,
+                      padding: EdgeInsets.all(5),
+                      alignment: Alignment.center,
+                      child: AlertDialog(
+                          shape: OutlineInputBorder(borderRadius: BorderRadius.circular(5)),
+                          contentPadding: EdgeInsets.all(5),
+                          actions: <Widget>[
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: <Widget>[
+                                Container(
+                                  height: MediaQuery.of(context).size.height*0.5,
+                                  width: MediaQuery.of(context).size.width,
+                                  child: ListView.builder(
+                                    itemCount: GlobalData.locations.length,
+                                    itemBuilder: (context,index){
+                                      return Container(
+                                        child: Row(
+                                          children: <Widget>[
+                                            Card(
+                                              child:  Radio(
+                                                value: GlobalData.locationId == -1 && index == 0?1:(GlobalData.locationId == index?1:0),
+                                                onChanged: (value){
+                                                  if(value == 1)
+                                                    GlobalData.locationId = index;
+                                                },
+                                              ),
+                                            ),
 
-                                    Container(
-                                      child: Text(GlobalData.locations[index],style: TextStyle(color: Colors.black),),
-                                    )
-                                  ],
-                                ),
-                              );
+                                            Container(
+                                              child: Text(GlobalData.locations[index],style: TextStyle(fontSize: 12,color: Colors.black),),
+                                            )
+                                          ],
+                                        ),
+                                      );
 
-                            },
-                          ),
-                        ),// Location panel
-                        Container(
-                          height: 30,
-                          child: RaisedButton(onPressed: ()=> Navigator.of(context).pop()),
-                        ),// Location confirm
-                      ],
-                    ),
+                                    },
+                                  ),
+                                ),// Location panel
+                                Container(
+                                  height: 40,
+                                  padding: EdgeInsets.all(5),
+                                  child: RaisedButton(
+                                    child: Text("Chọn",textAlign: TextAlign.center,),
+                                    textTheme: ButtonTextTheme.primary,
+                                    onPressed: ()=> Navigator.of(context).pop(),
+                                  ),
+                                ),// Location confirm
+                              ],
+                            ),
+                          ],
+                        )
                   )
-                ],
               );
             }
         );

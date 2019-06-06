@@ -12,10 +12,10 @@ import 'package:geolocator/geolocator.dart';
 
 Future main() async {
 
-  runApp(CompareApp());
   GeolocationStatus geolocationStatus  = await Geolocator().checkGeolocationPermissionStatus();
   Position position = await Geolocator().getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
   GlobalData.locationPosition = position;
+  runApp(CompareApp());
 }
 
 class CompareApp extends StatelessWidget {
