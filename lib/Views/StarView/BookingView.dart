@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_app/Model/Movie.dart';
+import 'package:flutter_app/Views/BookingView/BookingScheduleView.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
 
@@ -67,6 +68,8 @@ class BookingViewState extends State<BookingView> with TickerProviderStateMixin{
       length: 3,
       child: Scaffold(
         appBar: AppBar(
+          backgroundColor: Colors.white30,
+          elevation: 0,
           title: Text(_movie.film_name_vn,overflow:TextOverflow.ellipsis ,style: TextStyle(fontSize: 16,fontWeight: FontWeight.w400),textAlign: TextAlign.left,),
           bottom: TabBar(
             controller: _tabController,
@@ -100,7 +103,7 @@ class BookingViewState extends State<BookingView> with TickerProviderStateMixin{
         body: TabBarView(
           controller: _tabController,
           children: <Widget>[
-            Container(),
+            BookingScheduleView(),
             Container(),
             Container(),
           ],

@@ -13,8 +13,10 @@ import 'package:geolocator/geolocator.dart';
 Future main() async {
 
   GeolocationStatus geolocationStatus  = await Geolocator().checkGeolocationPermissionStatus();
-  Position position = await Geolocator().getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
-  GlobalData.locationPosition = position;
+  if(geolocationStatus == GeolocationStatus.granted){
+    Position position = await Geolocator().getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+    GlobalData.locationPosition = position;
+  }
   runApp(CompareApp());
 }
 
