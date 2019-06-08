@@ -51,4 +51,12 @@ class GlobalData{
     44: "Kon Tum",
   };
 
+  static final Map<String,String> parentCinema = {
+    "4":"BHD Star Cineplex",
+    "2":"Galaxy Cinema",
+    "16":"CineStar",
+    "6":"DDC - Đống Đa",
+    "17":"Mega GS",
+    "1":"Lotte Cinema",
+  };
 }

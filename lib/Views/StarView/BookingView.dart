@@ -23,6 +23,7 @@ class BookingViewState extends State<BookingView> with TickerProviderStateMixin{
   Timer _timer;
   Animation<Color> _animation;
   AnimationController _animationController;
+  BookingScheduleView _scheduleView = new BookingScheduleView();
 
   @override
   void initState() {
@@ -63,6 +64,7 @@ class BookingViewState extends State<BookingView> with TickerProviderStateMixin{
   Widget build(BuildContext context) {
 
     _movie = ModalRoute.of(context).settings.arguments;
+    _scheduleView.SetMovie(_movie);
     // TODO: implement build
     return DefaultTabController(
       length: 3,
@@ -103,7 +105,7 @@ class BookingViewState extends State<BookingView> with TickerProviderStateMixin{
         body: TabBarView(
           controller: _tabController,
           children: <Widget>[
-            BookingScheduleView(),
+            _scheduleView,
             Container(),
             Container(),
           ],
