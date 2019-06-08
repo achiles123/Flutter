@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../GlobalData.dart';
+import '../../Helper.dart';
 import '../../PopupHepler.dart';
 
 class BookingScheduleView extends StatefulWidget{
@@ -79,6 +80,7 @@ class BookingScheduleViewState extends State<BookingScheduleView>{
             ),// Change Location
             Container(
               height: 50,
+              width: MediaQuery.of(context).size.width,
               padding: EdgeInsets.all(7),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -108,9 +110,36 @@ class BookingScheduleViewState extends State<BookingScheduleView>{
               ),
             ),// Change View
             Container(
-              height: 50,
+              child: Column(
+                children: <Widget>[
+                  Container(
+                    height: 50,
+                    child: ListView.builder(
+                      shrinkWrap: true,
+                      scrollDirection: Axis.horizontal,
+                      itemCount: 7,
+                      itemBuilder: (context,index){
+                        return Container(
+                          width: MediaQuery.of(context).size.width/6,
+                          child: InkWell(
+                            onTap: (){
 
-            ),// Change View
+                            },
+                            child: Column(
+                              children: <Widget>[
+                                Text(Helper.GetNameOfDate(DateTime.now().add(Duration(days: index)))),
+                                Text(DateTime.now().add(Duration(days: index)).day.toString())
+                              ],
+                            ),
+                          )
+                        );
+                      },
+                    ),
+                  ),
+
+                ],
+              ),
+            ),// Date View
           ],
         ),
       )
