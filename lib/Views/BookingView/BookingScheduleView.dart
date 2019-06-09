@@ -9,6 +9,7 @@ import '../../PopupHepler.dart';
 
 class BookingScheduleView extends StatefulWidget{
   CinemaSchedule _cinemaSchedule;
+  List<CinemaSchedule> _scheduleByDay;
   Movie _movie;
   Map<String,List<CinemaSchedule>> _schedule;
 
@@ -58,7 +59,7 @@ class BookingScheduleViewState extends State<BookingScheduleView>{
                 return ExpansionPanelList(
                   expansionCallback: (indexChild,status){
                     setState(() {
-                      _selectedCinema = indexChild;
+                      _selectedCinema = index;
                     });
                   },
                   children: [
@@ -68,12 +69,32 @@ class BookingScheduleViewState extends State<BookingScheduleView>{
                         return Container(
                           child: Row(
                             children: <Widget>[
-                              Text(GlobalData.parentCinema[data.keys.elementAt(index)])
+                              Text(GlobalData.parentCinema[index].name)
                             ],
                           ),
                         );
                       },
-                      body: Container(),
+                      body: Column(
+                        children: <Widget>[
+                          Container(
+                            height: 100,
+                            child: ListView.builder(
+                              itemCount: data[data.keys.elementAt(index)].length,
+                              itemBuilder: (context,indexChild){
+                                return Container(
+                                  height: 40,
+                                  child: Row(
+                                    children: <Widget>[
+                                      Text(data[data.keys.elementAt(index)][indexChild].)
+                                    ],
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+
+                        ],
+                      ),
                     )
                   ],
                 );

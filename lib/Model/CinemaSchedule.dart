@@ -49,9 +49,9 @@ class CinemaSchedule{
   Future<Map<String,List<CinemaSchedule>>> GetScheduleByGroup({int filmId,String startDate,String endDate}) async {
     List<CinemaSchedule> data = await GetSchedule(filmId: filmId,startDate: startDate,endDate: endDate);
     Map<String,List<CinemaSchedule>> result = new Map<String,List<CinemaSchedule>>();
-    GlobalData.parentCinema.forEach((key,value){
+    GlobalData.parentCinema.forEach((item){
       result.addAll({
-        key:data.where((x)=> x.p_cinema_id==key).toList()
+        item.id:data.where((x)=> x.p_cinema_id==item.id).toList()
       });
     });
     return result;
