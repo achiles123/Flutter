@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter_app/Model/CinemaSchedule.dart';
 import 'package:flutter_app/Model/Movie.dart';
 import 'package:intl/intl.dart';
@@ -31,11 +32,12 @@ class BookingScheduleView extends StatefulWidget{
 }
 
 class BookingScheduleViewState extends State<BookingScheduleView>{
-  ScrollController _scrollController = new ScrollController(initialScrollOffset: 2*50.0,);
+  ScrollController _scrollController = new ScrollController(initialScrollOffset: 115.0,);
   bool _viewType = true;
   int _selectedDay = 0;
   int _selectedCinema = 0;
   bool _toggle = true;
+  GlobalKey _keyDateView = new GlobalKey();
   Map<String,List<CinemaSchedule>> _scheduleFiltered;
   CinemaSchedule _scheduleDetail;
 
@@ -43,6 +45,10 @@ class BookingScheduleViewState extends State<BookingScheduleView>{
   void initState() {
     // TODO: implement initState
     //super.initState();
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      //RenderBox renderBox =  _keyDateView.currentContext.findRenderObject();
+      //_scrollController.animateTo(110, duration: Duration(milliseconds: 500), curve: Curves.ease);
+    });
   }
 
   Widget GetSchedule(){
@@ -55,6 +61,73 @@ class BookingScheduleViewState extends State<BookingScheduleView>{
             shrinkWrap: true,
             physics: NeverScrollableScrollPhysics(),
             itemBuilder: (BuildContext context,index){
+              return LayoutBuilder(
+                builder: (mContext,constrain){
+                  return ExpansionPanelList(
+                    key: GlobalKey(debugLabel: "key"+index.toString()),
+                    animationDuration: Duration(milliseconds: 700),
+                    expansionCallback: (indexChild,status){
+                      setState(() {
+                        if(_selectedCinema == index){
+                          _toggle = !_toggle;
+                        }else{
+                          _toggle = true;
+                        }
+                        _selectedCinema = index;
+                        _scheduleDetail = _scheduleFiltered[_scheduleFiltered.keys.elementAt(index)].first;
+
+                        //RenderBox renderBox = mContext.findRenderObject();
+                        //_scrollController.animateTo(renderBox.localToGlobal(Offset.zero).dy, duration: Duration(microseconds: 100), curve: Curves.ease);
+                      });
+                    },
+                    children: [
+                      ExpansionPanel(
+                        canTapOnHeader: true,
+                        isExpanded: _selectedCinema == index && _toggle == true,
+                        headerBuilder: (context,status){
+                          return Container(
+                            child: Row(
+                              children: <Widget>[
+                                Image.network(GlobalData.parentCinema[index].logo,fit: BoxFit.fill,width: 40,),
+                                Text(GlobalData.parentCinema[index].name),
+                                Text("("+(_scheduleFiltered[_scheduleFiltered.keys.elementAt(index)].length != 0 ?_scheduleFiltered[_scheduleFiltered.keys.elementAt(index)][0].cinemas.length.toString():"0")+")"),
+                              ],
+                            ),
+                          );
+                        },
+                        body: Column(
+                          children: <Widget>[
+                            Row(
+                              mainAxisSize: MainAxisSize.min ,
+                              children: <Widget>[
+                                Flexible(
+                                  child: ListView.builder(
+                                    shrinkWrap: true,
+                                    physics: NeverScrollableScrollPhysics(),
+                                    itemCount: _scheduleDetail != null?_scheduleDetail.cinemas.length:0,
+                                    itemBuilder: (context,indexChild){
+                                      return Container(
+                                        height: 40,
+                                        child: Row(
+                                          children: <Widget>[
+                                            Text(GlobalData.parentCinema[index].shortName,style: TextStyle(color: GlobalData.parentCinema[index].color),),
+                                            Text(" - "+_scheduleDetail.cinemas[indexChild].cinema_name_s2)
+                                          ],
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                )
+                              ],
+                            ),
+
+                          ],
+                        ),
+                      )
+                    ],
+                  );
+                },
+              );
               return ExpansionPanelList(
                 key: GlobalKey(debugLabel: "key"+index.toString()),
                 animationDuration: Duration(milliseconds: 700),
@@ -231,6 +304,7 @@ class BookingScheduleViewState extends State<BookingScheduleView>{
                     ),// Change View
                     Divider(),
                     Container(
+                      key: _keyDateView,
                       child: Column(
                         children: <Widget>[
                           Container(
@@ -295,7 +369,6 @@ class BookingScheduleViewState extends State<BookingScheduleView>{
             }
           }),
     );
-    //_scrollController.animateTo(100, duration: Duration(milliseconds: 500), curve: Curves.ease);
     return returnWidget;
   }
 }
