@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_app/Model/CinemaSchedule.dart';
 import 'package:flutter_app/Model/Movie.dart';
@@ -9,7 +11,6 @@ import '../../PopupHepler.dart';
 
 class BookingScheduleView extends StatefulWidget{
   CinemaSchedule _cinemaSchedule;
-  List<CinemaSchedule> _scheduleByDay;
   Movie _movie;
   Map<String,List<CinemaSchedule>> _schedule;
 
@@ -30,10 +31,13 @@ class BookingScheduleView extends StatefulWidget{
 }
 
 class BookingScheduleViewState extends State<BookingScheduleView>{
-  ScrollController _scrollController = new ScrollController(initialScrollOffset: 2*50.0);
+  ScrollController _scrollController = new ScrollController(initialScrollOffset: 2*50.0,);
   bool _viewType = true;
   int _selectedDay = 0;
   int _selectedCinema = 0;
+  bool _toggle = true;
+  Map<String,List<CinemaSchedule>> _scheduleFiltered;
+  CinemaSchedule _scheduleDetail;
 
   @override
   void initState() {
@@ -42,52 +46,231 @@ class BookingScheduleViewState extends State<BookingScheduleView>{
   }
 
   Widget GetSchedule(){
-    DateFormat format = DateFormat("yyyy-MM-dd");
-    return FutureBuilder(
-      future: widget._schedule.length == 0?widget._cinemaSchedule.GetScheduleByGroup(filmId:widget._movie.film_id,startDate:format.format(DateTime.now()),endDate:format.format(DateTime.now().add(Duration(days: 7)))):Future<Map<String,List<CinemaSchedule>>>(()=>widget._schedule),
-      builder: (context,snapshot){
-        if(snapshot.connectionState == ConnectionState.waiting || snapshot.data == null)
-          return Container();
-        else{
-          widget._schedule = snapshot.data;
-          Map<String,List<CinemaSchedule>> data = snapshot.data;
-          return Container(
-            height: data.length*50.0,
-            child: ListView.builder(
-              itemCount: data.length,
-              itemBuilder: (context,index){
-                return ExpansionPanelList(
-                  expansionCallback: (indexChild,status){
-                    setState(() {
-                      _selectedCinema = index;
-                    });
-                  },
-                  children: [
-                    ExpansionPanel(
-                      isExpanded: _selectedCinema == index,
-                      headerBuilder: (context,status){
-                        return Container(
-                          child: Row(
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        Flexible(
+          child: ListView.builder(
+            itemCount: widget._schedule.length,
+            shrinkWrap: true,
+            physics: NeverScrollableScrollPhysics(),
+            itemBuilder: (BuildContext context,index){
+              return ExpansionPanelList(
+                key: GlobalKey(debugLabel: "key"+index.toString()),
+                animationDuration: Duration(milliseconds: 700),
+                expansionCallback: (indexChild,status){
+                  setState(() {
+                    if(_selectedCinema == index){
+                      _toggle = !_toggle;
+                    }else{
+                      _toggle = true;
+                    }
+                    _selectedCinema = index;
+                    _scheduleDetail = _scheduleFiltered[_scheduleFiltered.keys.elementAt(index)].first;
+
+
+
+                  });
+                },
+                children: [
+                  ExpansionPanel(
+                    canTapOnHeader: true,
+                    isExpanded: _selectedCinema == index && _toggle == true,
+                    headerBuilder: (context,status){
+                      return Container(
+                        child: Row(
+                          children: <Widget>[
+                            Image.network(GlobalData.parentCinema[index].logo,fit: BoxFit.fill,width: 40,),
+                            Text(GlobalData.parentCinema[index].name),
+                            Text("("+(_scheduleFiltered[_scheduleFiltered.keys.elementAt(index)].length != 0 ?_scheduleFiltered[_scheduleFiltered.keys.elementAt(index)][0].cinemas.length.toString():"0")+")"),
+                          ],
+                        ),
+                      );
+                    },
+                    body: Column(
+                      children: <Widget>[
+                        Row(
+                          mainAxisSize: MainAxisSize.min ,
+                          children: <Widget>[
+                            Flexible(
+                              child: ListView.builder(
+                                shrinkWrap: true,
+                                physics: NeverScrollableScrollPhysics(),
+                                itemCount: _scheduleDetail != null?_scheduleDetail.cinemas.length:0,
+                                itemBuilder: (context,indexChild){
+                                  return Container(
+                                    height: 40,
+                                    child: Row(
+                                      children: <Widget>[
+                                        Text(GlobalData.parentCinema[index].shortName,style: TextStyle(color: GlobalData.parentCinema[index].color),),
+                                        Text(" - "+_scheduleDetail.cinemas[indexChild].cinema_name_s2)
+                                      ],
+                                    ),
+                                  );
+                                },
+                              ),
+                            )
+                          ],
+                        ),
+
+                      ],
+                    ),
+                  )
+                ],
+              );
+            },
+          ),
+        ),
+
+      ],
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    DateFormat format = new DateFormat("yyyy-MM-dd");
+     // TODO: implement build
+    Widget returnWidget = RefreshIndicator(
+      onRefresh: () async{
+        setState(() {
+        });
+      },
+      child: FutureBuilder(
+          future: widget._schedule.length == 0?widget._cinemaSchedule.GetScheduleByGroup(filmId:widget._movie.film_id,startDate:format.format(DateTime.now()),endDate:format.format(DateTime.now().add(Duration(days: 7)))):Future<Map<String,List<CinemaSchedule>>>(()=>widget._schedule),
+          builder: (context,snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting && widget._schedule.length == 0)
+              return Container();
+            else{
+              widget._schedule = snapshot.data;
+              _scheduleFiltered = Map<String,List<CinemaSchedule>>();
+              widget._schedule.forEach((key,value){
+                _scheduleFiltered.addAll({
+                  key:value.where((x)=> x.date == DateFormat("yyyyMMdd").format(DateTime.now())).toList()
+                });
+              });
+              _scheduleDetail = _scheduleDetail == null? _scheduleFiltered[_scheduleFiltered.keys.elementAt(0)].first:_scheduleDetail;
+              return Container(
+                color: Colors.white,
+                height: double.infinity,
+                child: ListView(
+                  controller: _scrollController,
+                  shrinkWrap: true,
+                  physics: AlwaysScrollableScrollPhysics(),
+                  children: <Widget>[
+                    Container(
+                      height: 50,
+                      padding: EdgeInsets.all(7),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: <Widget>[
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: <Widget>[
-                              Text(GlobalData.parentCinema[index].name)
+                              Text("Vị trí hiện tại",style: TextStyle(color: Colors.black38,fontWeight: FontWeight.w400),),
+                              Text(
+                                  GlobalData.locations.containsKey(GlobalData.locationId)?GlobalData.locations[GlobalData.locationId]:"",
+                                  style: TextStyle(fontSize: 16,fontWeight: FontWeight.w400)),
                             ],
                           ),
-                        );
-                      },
-                      body: Column(
+                          Spacer(),
+                          Switch(
+                            activeColor: Colors.deepOrangeAccent,
+                            value: GlobalData.locationId == -1?false:true,
+                            onChanged: (value){
+                              if(value == false){
+                                setState(() {
+                                  GlobalData.locationId = -1;
+                                });
+                              }else{
+                                showDialog(
+                                    context: context,
+                                    barrierDismissible: false,
+                                    builder: (context){
+                                      return new LocationPopup();
+                                    }
+                                );
+                              }
+                            },
+
+                          ),
+
+                        ],
+                      ),
+                    ),// Change Location
+                    Divider(),
+                    Container(
+                      height: 50,
+                      width: MediaQuery.of(context).size.width,
+                      padding: EdgeInsets.all(7),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: <Widget>[
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                              Text("Lịch chiếu",style: TextStyle(color: Colors.black38,fontWeight: FontWeight.w400),),
+                              Text(
+                                  _viewType?"Gộp nhóm":"Liệt kê",
+                                  style: TextStyle(fontSize: 16,fontWeight: FontWeight.w400)),
+                            ],
+                          ),
+                          Spacer(),
+                          Switch(
+                            activeColor: Colors.deepOrangeAccent,
+                            value: _viewType,
+                            onChanged: (value){
+                              setState(() {
+                                _viewType = value;
+                              });
+                            },
+
+                          ),
+
+                        ],
+                      ),
+                    ),// Change View
+                    Divider(),
+                    Container(
+                      child: Column(
                         children: <Widget>[
                           Container(
-                            height: 100,
+                            height: 50,
                             child: ListView.builder(
-                              itemCount: data[data.keys.elementAt(index)].length,
-                              itemBuilder: (context,indexChild){
+                              shrinkWrap: true,
+                              scrollDirection: Axis.horizontal,
+                              itemCount: 7,
+                              itemBuilder: (context,index){
                                 return Container(
-                                  height: 40,
-                                  child: Row(
-                                    children: <Widget>[
-                                      Text(data[data.keys.elementAt(index)][indexChild].)
-                                    ],
-                                  ),
+                                    width: MediaQuery.of(context).size.width/6,
+                                    child: InkWell(
+                                      onTap: (){
+                                        setState(() {
+                                          _selectedDay = index;
+                                          widget._schedule.forEach((key,value){
+                                            _scheduleFiltered.addAll({
+                                              key:value.where((x)=> x.date == DateFormat("yyyyMMdd").format(DateTime.now().add(Duration(days: index)))).toList()
+                                            });
+                                          });
+                                        });
+                                      },
+                                      child: Column(
+                                        children: <Widget>[
+                                          Text(Helper.GetNameOfDate(DateTime.now().add(Duration(days: index))),style: TextStyle(fontSize: 14,color: index == _selectedDay?Colors.deepOrangeAccent:Colors.black),),
+                                          Expanded(
+                                            child: Container(
+                                                alignment: Alignment.center,
+                                                width: MediaQuery.of(context).size.width/6,
+                                                decoration: BoxDecoration(
+                                                  shape: index == _selectedDay?BoxShape.circle:BoxShape.rectangle,
+                                                  color: index == _selectedDay?Colors.deepOrange:Colors.transparent,
+                                                ),
+                                                child: Text(DateTime.now().add(Duration(days: index)).day.toString(),style: TextStyle(color: index == _selectedDay?Colors.white:Colors.black),textAlign: TextAlign.center,)
+                                            ),
+                                          ),
+
+                                        ],
+                                      ),
+                                    )
                                 );
                               },
                             ),
@@ -95,159 +278,24 @@ class BookingScheduleViewState extends State<BookingScheduleView>{
 
                         ],
                       ),
-                    )
-                  ],
-                );
-              },
-            ),
-          );
-
-        }
-      },
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    // TODO: implement build
-    return RefreshIndicator(
-        onRefresh: () async{
-          setState(() {
-          });
-        },
-        child: Container(
-          color: Colors.white,
-
-          child: ListView(
-            controller: _scrollController,
-            shrinkWrap: true,
-            children: <Widget>[
-              Container(
-                height: 50,
-                padding: EdgeInsets.all(7),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: <Widget>[
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Text("Vị trí hiện tại",style: TextStyle(color: Colors.black38,fontWeight: FontWeight.w400),),
-                        Text(
-                            GlobalData.locations.containsKey(GlobalData.locationId)?GlobalData.locations[GlobalData.locationId]:"",
-                            style: TextStyle(fontSize: 16,fontWeight: FontWeight.w400)),
-                      ],
-                    ),
-                    Spacer(),
-                    Switch(
-                      activeColor: Colors.deepOrangeAccent,
-                      value: GlobalData.locationId == -1?false:true,
-                      onChanged: (value){
-                        if(value == false){
-                          setState(() {
-                            GlobalData.locationId = -1;
-                          });
-                        }else{
-                          showDialog(
-                              context: context,
-                              barrierDismissible: false,
-                              builder: (context){
-                                return new LocationPopup();
-                              }
-                          );
-                        }
-                      },
-
-                    ),
-
-                  ],
-                ),
-              ),// Change Location
-              Divider(),
-              Container(
-                height: 50,
-                width: MediaQuery.of(context).size.width,
-                padding: EdgeInsets.all(7),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: <Widget>[
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Text("Lịch chiếu",style: TextStyle(color: Colors.black38,fontWeight: FontWeight.w400),),
-                        Text(
-                            _viewType?"Gộp nhóm":"Liệt kê",
-                            style: TextStyle(fontSize: 16,fontWeight: FontWeight.w400)),
-                      ],
-                    ),
-                    Spacer(),
-                    Switch(
-                      activeColor: Colors.deepOrangeAccent,
-                      value: _viewType,
-                      onChanged: (value){
-                        setState(() {
-                          _viewType = value;
-                        });
-                      },
-
-                    ),
-
-                  ],
-                ),
-              ),// Change View
-              Divider(),
-              Container(
-                child: Column(
-                  children: <Widget>[
+                    ),// Date View
                     Container(
-                      height: 50,
-                      child: ListView.builder(
-                        shrinkWrap: true,
-                        scrollDirection: Axis.horizontal,
-                        itemCount: 7,
-                        itemBuilder: (context,index){
-                          return Container(
-                              width: MediaQuery.of(context).size.width/6,
-                              child: InkWell(
-                                onTap: (){
-                                  setState(() {
-                                    _selectedDay = index;
-                                  });
-                                },
-                                child: Column(
-                                  children: <Widget>[
-                                    Text(Helper.GetNameOfDate(DateTime.now().add(Duration(days: index))),style: TextStyle(fontSize: 14,color: index == _selectedDay?Colors.deepOrangeAccent:Colors.black),),
-                                    Expanded(
-                                      child: Container(
-                                          alignment: Alignment.center,
-                                          width: MediaQuery.of(context).size.width/6,
-                                          decoration: BoxDecoration(
-                                            shape: index == _selectedDay?BoxShape.circle:BoxShape.rectangle,
-                                            color: index == _selectedDay?Colors.deepOrange:Colors.transparent,
-                                          ),
-                                          child: Text(DateTime.now().add(Duration(days: index)).day.toString(),style: TextStyle(color: index == _selectedDay?Colors.white:Colors.black),textAlign: TextAlign.center,)
-                                      ),
-                                    ),
-
-                                  ],
-                                ),
-                              )
-                          );
-                        },
-                      ),
+                      alignment: Alignment.center,
+                      padding: EdgeInsets.all(5),
+                      child: Text(Helper.GetFullNameOfDate(DateTime.now().add(Duration(days: _selectedDay))),style: TextStyle(color: Colors.black54),),
                     ),
+                    GetSchedule(),
+
 
                   ],
                 ),
-              ),// Date View
-              Container(
-                alignment: Alignment.center,
-                padding: EdgeInsets.all(5),
-                child: Text(Helper.GetFullNameOfDate(DateTime.now().add(Duration(days: _selectedDay))),style: TextStyle(color: Colors.black54),),
-              ),
-              GetSchedule()
-            ],
-          ),
-        )
+
+
+              );
+            }
+          }),
     );
+    //_scrollController.animateTo(100, duration: Duration(milliseconds: 500), curve: Curves.ease);
+    return returnWidget;
   }
 }

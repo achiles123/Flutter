@@ -318,102 +318,108 @@ class HomeViewState extends State<HomeView>{
                 if(snapshot.connectionState == ConnectionState.waiting)
                   return Container();
                 List<Movie> result = snapshot.data;
-                return Container(
-                  height: 270,
-                  margin: EdgeInsets.only(top: 5),
-                  child: ListView.builder(
-                    shrinkWrap: true,
-                    physics: NeverScrollableScrollPhysics(),
-                    itemCount: result.length > 3?3:result.length,
-                    itemBuilder: (context,index){
-                      return Container(
+                return Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    Flexible(
+                      child: Container(
                         margin: EdgeInsets.only(top: 5),
-                        padding: EdgeInsets.all(0),
-                        width: double.infinity,
-                        height: 80,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: <Widget>[
-                            Container(
-                              width: 70,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(7),
-                                image: DecorationImage(image: NetworkImage(result[index].poster_thumb),fit: BoxFit.fill),
-                              ),
-
-                            ),// Column 1
-                            Expanded(
-                              child: Container(
-                                margin: EdgeInsets.only(left: 5),
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: <Widget>[
-                                    Text(result[index].film_name_vn,overflow: TextOverflow.ellipsis,style: TextStyle(fontSize: 16),),
-                                    Row(
-                                      mainAxisAlignment: MainAxisAlignment.start,
-                                      children: <Widget>[
-                                        if(result[index].film_age != 0)
-                                          Container(
-                                            alignment: Alignment.centerLeft,
-                                            decoration: BoxDecoration(borderRadius: BorderRadius.circular(3),color: Colors.red),
-                                            child: Text("C"+result[index].film_age.toString(),style:TextStyle(color: Colors.white),),
-                                          )
-                                        ,
-                                        Container(
-                                          margin: EdgeInsets.only(left: 5),
-                                          child:
-                                          Text(result[index].film_duration.toString()+"p - IMDb "+result[index].imdb_point.toString(),style: TextStyle(color: Colors.black26),),
-                                        ),
-                                      ],
+                        child: ListView.builder(
+                          shrinkWrap: true,
+                          physics: NeverScrollableScrollPhysics(),
+                          itemCount: result.length > 3?3:result.length,
+                          itemBuilder: (context,index){
+                            return Container(
+                              margin: EdgeInsets.only(top: 5),
+                              padding: EdgeInsets.all(0),
+                              width: double.infinity,
+                              height: 80,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: <Widget>[
+                                  Container(
+                                    width: 70,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(7),
+                                      image: DecorationImage(image: NetworkImage(result[index].poster_thumb),fit: BoxFit.fill),
                                     ),
-                                    Container(
-                                      alignment: FractionalOffset.topLeft,
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(5),
-                                        color: Colors.grey.withOpacity(0.8),
 
-                                      ),
-                                      width: MediaQuery.of(context).size.width*0.15,
-                                      height: MediaQuery.of(context).size.height*0.06,
+                                  ),// Column 1
+                                  Expanded(
+                                    child: Container(
+                                      margin: EdgeInsets.only(left: 5),
                                       child: Column(
-                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        crossAxisAlignment: CrossAxisAlignment.start,
                                         children: <Widget>[
-                                          Text(result[index].avg_point_showing.toString(),style: TextStyle(color: Colors.white,fontSize: 14,fontWeight: FontWeight.w400),),
+                                          Text(result[index].film_name_vn,overflow: TextOverflow.ellipsis,style: TextStyle(fontSize: 16),),
                                           Row(
-                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                            mainAxisAlignment: MainAxisAlignment.start,
                                             children: <Widget>[
-                                              Icon((result[index].avg_point_all >= 2?Icons.star:(result[index].avg_point_all<=0?Icons.star_border:Icons.star_half)),color: Colors.red,size: 10,),
-                                              Icon((result[index].avg_point_all >= 4?Icons.star:(result[index].avg_point_all<=2?Icons.star_border:Icons.star_half)),color: Colors.red,size: 10,),
-                                              Icon((result[index].avg_point_all >= 6?Icons.star:(result[index].avg_point_all<=4?Icons.star_border:Icons.star_half)),color: Colors.red,size: 10,),
-                                              Icon((result[index].avg_point_all >= 8?Icons.star:(result[index].avg_point_all<=6?Icons.star_border:Icons.star_half)),color: Colors.red,size: 10,),
-                                              Icon((result[index].avg_point_all >= 10?Icons.star:(result[index].avg_point_all<=8?Icons.star_border:Icons.star_half)),color: Colors.red,size: 10,),
+                                              if(result[index].film_age != 0)
+                                                Container(
+                                                  alignment: Alignment.centerLeft,
+                                                  decoration: BoxDecoration(borderRadius: BorderRadius.circular(3),color: Colors.red),
+                                                  child: Text("C"+result[index].film_age.toString(),style:TextStyle(color: Colors.white),),
+                                                )
+                                              ,
+                                              Container(
+                                                margin: EdgeInsets.only(left: 5),
+                                                child:
+                                                Text(result[index].film_duration.toString()+"p - IMDb "+result[index].imdb_point.toString(),style: TextStyle(color: Colors.black26),),
+                                              ),
                                             ],
-                                          )
+                                          ),
+                                          Container(
+                                            alignment: FractionalOffset.topLeft,
+                                            decoration: BoxDecoration(
+                                              borderRadius: BorderRadius.circular(5),
+                                              color: Colors.grey.withOpacity(0.8),
+
+                                            ),
+                                            width: MediaQuery.of(context).size.width*0.15,
+                                            height: MediaQuery.of(context).size.height*0.06,
+                                            child: Column(
+                                              mainAxisAlignment: MainAxisAlignment.center,
+                                              children: <Widget>[
+                                                Text(result[index].avg_point_showing.toString(),style: TextStyle(color: Colors.white,fontSize: 14,fontWeight: FontWeight.w400),),
+                                                Row(
+                                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                  children: <Widget>[
+                                                    Icon((result[index].avg_point_all >= 2?Icons.star:(result[index].avg_point_all<=0?Icons.star_border:Icons.star_half)),color: Colors.red,size: 10,),
+                                                    Icon((result[index].avg_point_all >= 4?Icons.star:(result[index].avg_point_all<=2?Icons.star_border:Icons.star_half)),color: Colors.red,size: 10,),
+                                                    Icon((result[index].avg_point_all >= 6?Icons.star:(result[index].avg_point_all<=4?Icons.star_border:Icons.star_half)),color: Colors.red,size: 10,),
+                                                    Icon((result[index].avg_point_all >= 8?Icons.star:(result[index].avg_point_all<=6?Icons.star_border:Icons.star_half)),color: Colors.red,size: 10,),
+                                                    Icon((result[index].avg_point_all >= 10?Icons.star:(result[index].avg_point_all<=8?Icons.star_border:Icons.star_half)),color: Colors.red,size: 10,),
+                                                  ],
+                                                )
+                                              ],
+                                            ),
+                                          ),
                                         ],
                                       ),
                                     ),
-                                  ],
-                                ),
-                              ),
-                            ),// Column 2
-                            Container(
-                              alignment: Alignment.center,
-                              margin: EdgeInsets.only(left: 5),
-                              child: RaisedButton(
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
-                                color: Colors.redAccent,
-                                child: Text("ĐẶT VÉ",style: TextStyle(color: Colors.white),),
-                                onPressed: (){
+                                  ),// Column 2
+                                  Container(
+                                    alignment: Alignment.center,
+                                    margin: EdgeInsets.only(left: 5),
+                                    child: RaisedButton(
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+                                      color: Colors.redAccent,
+                                      child: Text("ĐẶT VÉ",style: TextStyle(color: Colors.white),),
+                                      onPressed: (){
 
-                                },
+                                      },
+                                    ),
+                                  ), // Column 3
+                                ],
                               ),
-                            ), // Column 3
-                          ],
+                            );
+                          },
                         ),
-                      );
-                    },
-                  ),
+                      )
+                    )
+                  ],
                 );
               },
             ),
@@ -440,70 +446,74 @@ class HomeViewState extends State<HomeView>{
             if(snapshot.data != null)
               widget._review = snapshot.data;
             if(widget._review != null){
-              return Container(
-                height: 1100,
-                child: ListView.builder(
-                  shrinkWrap: true,
-                  physics: NeverScrollableScrollPhysics(),
-                  itemCount: widget._review.length > 3?3:widget._review.length,
-                  itemBuilder: (context,index){
-                    return Container(
-                      margin: EdgeInsets.only(top: 15),
-                      padding: EdgeInsets.all(0),
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(10),
-                          boxShadow:[
-                            BoxShadow(
-                                color: Colors.black.withOpacity(0.2),
-                                offset: Offset(3, 5),
-                                blurRadius: 5,
-                                spreadRadius: 0
-                            )
-                          ]
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          Container(
-                            height: 110,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.only(topLeft: Radius.circular(10),topRight: Radius.circular(10)),
-                              image: DecorationImage(image: NetworkImage(widget._review[index].img_lhorizontal),fit: BoxFit.fitWidth,alignment: Alignment.topLeft),
-                            ),
+              return Row(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Flexible(
+                    child: ListView.builder(
+                      shrinkWrap: true,
+                      physics: NeverScrollableScrollPhysics(),
+                      itemCount: widget._review.length > 3?3:widget._review.length,
+                      itemBuilder: (context,index){
+                        return Container(
+                          margin: EdgeInsets.only(top: 15),
+                          padding: EdgeInsets.all(0),
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(10),
+                              boxShadow:[
+                                BoxShadow(
+                                    color: Colors.black.withOpacity(0.2),
+                                    offset: Offset(3, 5),
+                                    blurRadius: 5,
+                                    spreadRadius: 0
+                                )
+                              ]
                           ),
-                          Container(
-                            margin: EdgeInsets.only(top:5),
-                            padding: EdgeInsets.all(10),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: <Widget>[
-                                Container(
-                                  margin: EdgeInsets.only(top: 5),
-                                  child: Text("REVIEW",style: TextStyle(fontSize: 18),),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                              Container(
+                                height: 110,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.only(topLeft: Radius.circular(10),topRight: Radius.circular(10)),
+                                  image: DecorationImage(image: NetworkImage(widget._review[index].img_lhorizontal),fit: BoxFit.fitWidth,alignment: Alignment.topLeft),
                                 ),
-                                Container(
-                                  margin: EdgeInsets.only(top: 7),
-                                  child: Text(widget._review[index].news_title,overflow: TextOverflow.ellipsis,maxLines: 3,style: TextStyle(fontSize: 28,fontWeight: FontWeight.w300),),
-                                ),
-                                Container(
-                                  margin: EdgeInsets.only(top: 7),
-                                  child: Text(widget._review[index].news_description,overflow: TextOverflow.ellipsis,maxLines: 4,style: TextStyle(fontSize: 16,color: Colors.black38),),
-                                ),
+                              ),
+                              Container(
+                                margin: EdgeInsets.only(top:5),
+                                padding: EdgeInsets.all(10),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: <Widget>[
+                                    Container(
+                                      margin: EdgeInsets.only(top: 5),
+                                      child: Text("REVIEW",style: TextStyle(fontSize: 18),),
+                                    ),
+                                    Container(
+                                      margin: EdgeInsets.only(top: 7),
+                                      child: Text(widget._review[index].news_title,overflow: TextOverflow.ellipsis,maxLines: 3,style: TextStyle(fontSize: 28,fontWeight: FontWeight.w300),),
+                                    ),
+                                    Container(
+                                      margin: EdgeInsets.only(top: 7),
+                                      child: Text(widget._review[index].news_description,overflow: TextOverflow.ellipsis,maxLines: 4,style: TextStyle(fontSize: 16,color: Colors.black38),),
+                                    ),
 
 
-                              ],
-                            ),
+                                  ],
+                                ),
+                              ),
+
+                            ],
                           ),
-
-                        ],
-                      ),
-                    );
-                  },
-                ),
+                        );
+                      },
+                    ),
+                  )
+                ],
               );
             }else{
               return Container();
@@ -544,51 +554,58 @@ class HomeViewState extends State<HomeView>{
                   widget._newsMore = snapshot.data;
                 if(widget._newsMore != null){
                   return Container(
-                    height: 500,
                     margin: EdgeInsets.only(top: 5),
-                    child: ListView.builder(
-                      shrinkWrap: true,
-                      physics: NeverScrollableScrollPhysics(),
-                      itemCount: widget._newsMore.length > 5?5:widget._newsMore.length,
-                      itemBuilder: (context,index){
-                        return Container(
-                          margin: EdgeInsets.only(top: 10),
-                          padding: EdgeInsets.all(0),
-                          width: double.infinity,
-                          height: 90,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: <Widget>[
-                              Container(
-                                width: 80,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(7),
-                                  image: DecorationImage(image: NetworkImage(widget._newsMore[index].image_small),fit: BoxFit.fill),
-                                ),
-
-                              ),// Column 1
-                              Expanded(
-                                child: Container(
-                                  margin: EdgeInsets.only(left: 10,),
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: <Widget>[
-                                      Text(widget._newsMore[index].type_id == 4?"Khuyễn mãi":"Điện ảnh 24h",overflow: TextOverflow.ellipsis,style: TextStyle(fontSize: 16,color: Colors.black38,fontWeight: FontWeight.w400),),
-                                      Container(
-                                        margin: EdgeInsets.only(top: 5),
-                                        child: Text(widget._newsMore[index].news_title,overflow: TextOverflow.clip,style: TextStyle(fontSize: 18,fontWeight: FontWeight.w300),),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                        Flexible(
+                          child:  ListView.builder(
+                            shrinkWrap: true,
+                            physics: NeverScrollableScrollPhysics(),
+                            itemCount: widget._newsMore.length > 5?5:widget._newsMore.length,
+                            itemBuilder: (context,index){
+                              return Container(
+                                margin: EdgeInsets.only(top: 10),
+                                padding: EdgeInsets.all(0),
+                                width: double.infinity,
+                                height: 90,
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: <Widget>[
+                                    Container(
+                                      width: 80,
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(7),
+                                        image: DecorationImage(image: NetworkImage(widget._newsMore[index].image_small),fit: BoxFit.fill),
                                       ),
 
-                                    ],
-                                  ),
+                                    ),// Column 1
+                                    Expanded(
+                                      child: Container(
+                                        margin: EdgeInsets.only(left: 10,),
+                                        child: Column(
+                                          mainAxisAlignment: MainAxisAlignment.start,
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: <Widget>[
+                                            Text(widget._newsMore[index].type_id == 4?"Khuyễn mãi":"Điện ảnh 24h",overflow: TextOverflow.ellipsis,style: TextStyle(fontSize: 16,color: Colors.black38,fontWeight: FontWeight.w400),),
+                                            Container(
+                                              margin: EdgeInsets.only(top: 5),
+                                              child: Text(widget._newsMore[index].news_title,overflow: TextOverflow.clip,style: TextStyle(fontSize: 18,fontWeight: FontWeight.w300),),
+                                            ),
+
+                                          ],
+                                        ),
+                                      ),
+                                    ),// Column 2
+                                  ],
                                 ),
-                              ),// Column 2
-                            ],
+                              );
+                            },
                           ),
-                        );
-                      },
+                        )
+                      ],
                     ),
+
                   );
                 }else{
                   return Container();
@@ -631,139 +648,143 @@ class HomeViewState extends State<HomeView>{
             if(snapshot.data != null)
               widget._topComment = snapshot.data;
             if(widget._topComment != null){
-              return Container(
-                height: 1020,
-                child: ListView.builder(
-                  shrinkWrap: true,
-                  physics: NeverScrollableScrollPhysics(),
-                  itemCount: widget._topComment.length,
-                  itemBuilder: (context,index){
-                    return Container(
-                      margin: EdgeInsets.only(top: 15),
-                      padding: EdgeInsets.all(10),
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(10),
-                          boxShadow:[
-                            BoxShadow(
-                                color: Colors.black.withOpacity(0.2),
-                                offset: Offset(3, 5),
-                                blurRadius: 5,
-                                spreadRadius: 0
-                            )
-                          ]
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          Container(
-                              height: 35,
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: <Widget>[
-                                  Container(
-                                    width: MediaQuery.of(context).size.width*0.5,
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: <Widget>[
-                                        Text(widget._topComment[index].movie.film_name_vn,overflow: TextOverflow.clip,maxLines: 1,),
-                                        Row(
-                                          mainAxisAlignment: MainAxisAlignment.start,
-                                          children: <Widget>[
-                                            Icon((widget._topComment[index].movie.avg_point>= 2?Icons.star:(widget._topComment[index].movie.avg_point<=0?Icons.star_border:Icons.star_half)),color: Colors.red,size: 10,),
-                                            Icon((widget._topComment[index].movie.avg_point >= 4?Icons.star:(widget._topComment[index].movie.avg_point<=2?Icons.star_border:Icons.star_half)),color: Colors.red,size: 10,),
-                                            Icon((widget._topComment[index].movie.avg_point >= 6?Icons.star:(widget._topComment[index].movie.avg_point<=4?Icons.star_border:Icons.star_half)),color: Colors.red,size: 10,),
-                                            Icon((widget._topComment[index].movie.avg_point >= 8?Icons.star:(widget._topComment[index].movie.avg_point<=6?Icons.star_border:Icons.star_half)),color: Colors.red,size: 10,),
-                                            Icon((widget._topComment[index].movie.avg_point >= 10?Icons.star:(widget._topComment[index].movie.avg_point<=8?Icons.star_border:Icons.star_half)),color: Colors.red,size: 10,),
-                                          ],
-                                        ),
-                                      ],
-                                    ),// Movie name
-                                  ),
-                                  Row(
+              return Row(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Flexible(
+                    child: ListView.builder(
+                      shrinkWrap: true,
+                      physics: NeverScrollableScrollPhysics(),
+                      itemCount: widget._topComment.length,
+                      itemBuilder: (context,index){
+                        return Container(
+                          margin: EdgeInsets.only(top: 15),
+                          padding: EdgeInsets.all(10),
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(10),
+                              boxShadow:[
+                                BoxShadow(
+                                    color: Colors.black.withOpacity(0.2),
+                                    offset: Offset(3, 5),
+                                    blurRadius: 5,
+                                    spreadRadius: 0
+                                )
+                              ]
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                              Container(
+                                  height: 35,
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                     children: <Widget>[
                                       Container(
-                                        width: MediaQuery.of(context).size.width*0.25,
+                                        width: MediaQuery.of(context).size.width*0.5,
                                         child: Column(
-                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                          crossAxisAlignment: CrossAxisAlignment.end,
+                                          crossAxisAlignment: CrossAxisAlignment.start,
                                           children: <Widget>[
-                                            Text(widget._topComment[index].guest_name,maxLines: 1,overflow: TextOverflow.clip,textAlign: TextAlign.right,style: TextStyle(fontWeight: FontWeight.w300,fontSize: 12),),
-                                            Text("Vài giây trước",textAlign: TextAlign.right,style: TextStyle(color: Colors.black38,fontSize: 12))
-
+                                            Text(widget._topComment[index].movie.film_name_vn,overflow: TextOverflow.clip,maxLines: 1,),
+                                            Row(
+                                              mainAxisAlignment: MainAxisAlignment.start,
+                                              children: <Widget>[
+                                                Icon((widget._topComment[index].movie.avg_point>= 2?Icons.star:(widget._topComment[index].movie.avg_point<=0?Icons.star_border:Icons.star_half)),color: Colors.red,size: 10,),
+                                                Icon((widget._topComment[index].movie.avg_point >= 4?Icons.star:(widget._topComment[index].movie.avg_point<=2?Icons.star_border:Icons.star_half)),color: Colors.red,size: 10,),
+                                                Icon((widget._topComment[index].movie.avg_point >= 6?Icons.star:(widget._topComment[index].movie.avg_point<=4?Icons.star_border:Icons.star_half)),color: Colors.red,size: 10,),
+                                                Icon((widget._topComment[index].movie.avg_point >= 8?Icons.star:(widget._topComment[index].movie.avg_point<=6?Icons.star_border:Icons.star_half)),color: Colors.red,size: 10,),
+                                                Icon((widget._topComment[index].movie.avg_point >= 10?Icons.star:(widget._topComment[index].movie.avg_point<=8?Icons.star_border:Icons.star_half)),color: Colors.red,size: 10,),
+                                              ],
+                                            ),
                                           ],
-                                        ),
+                                        ),// Movie name
                                       ),
-
-                                      Stack(
+                                      Row(
                                         children: <Widget>[
                                           Container(
-                                            width: 35,
-                                            height: 35,
-                                            decoration: BoxDecoration(
-                                                borderRadius: BorderRadius.circular(50),
-                                                image: DecorationImage(image: NetworkImage(widget._topComment[index].avatar),fit: BoxFit.fill)
+                                            width: MediaQuery.of(context).size.width*0.25,
+                                            child: Column(
+                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                              crossAxisAlignment: CrossAxisAlignment.end,
+                                              children: <Widget>[
+                                                Text(widget._topComment[index].guest_name,maxLines: 1,overflow: TextOverflow.clip,textAlign: TextAlign.right,style: TextStyle(fontWeight: FontWeight.w300,fontSize: 12),),
+                                                Text("Vài giây trước",textAlign: TextAlign.right,style: TextStyle(color: Colors.black38,fontSize: 12))
+
+                                              ],
                                             ),
                                           ),
-                                          Positioned(
-                                            right: 0,
-                                            bottom: 0,
-                                            child: Container(
-                                              width: 17,
-                                              height: 17,
-                                              foregroundDecoration: BoxDecoration(
-                                                  color: Colors.transparent,
-                                                  shape: BoxShape.circle,
-                                                  image: DecorationImage(image: AssetImage((widget._topComment[index].facebook_id != ""?"assets/image/facebook.png":"assets/image/zalo.png")),fit: BoxFit.fill),
-                                                  border: Border.fromBorderSide(BorderSide(color: Colors.white,width: 2))
+
+                                          Stack(
+                                            children: <Widget>[
+                                              Container(
+                                                width: 35,
+                                                height: 35,
+                                                decoration: BoxDecoration(
+                                                    borderRadius: BorderRadius.circular(50),
+                                                    image: DecorationImage(image: NetworkImage(widget._topComment[index].avatar),fit: BoxFit.fill)
+                                                ),
                                               ),
-                                            ),
+                                              Positioned(
+                                                right: 0,
+                                                bottom: 0,
+                                                child: Container(
+                                                  width: 17,
+                                                  height: 17,
+                                                  foregroundDecoration: BoxDecoration(
+                                                      color: Colors.transparent,
+                                                      shape: BoxShape.circle,
+                                                      image: DecorationImage(image: AssetImage((widget._topComment[index].facebook_id != ""?"assets/image/facebook.png":"assets/image/zalo.png")),fit: BoxFit.fill),
+                                                      border: Border.fromBorderSide(BorderSide(color: Colors.white,width: 2))
+                                                  ),
+                                                ),
+                                              )
+                                            ],
                                           )
                                         ],
-                                      )
+                                      ),// User status
                                     ],
-                                  ),// User status
-                                ],
-                              )
-                          ), //Header
-                          Container(
-                            height: 95,
-                            margin: EdgeInsets.only(top: 10),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: <Widget>[
-                                Image.network(widget._topComment[index].movie.poster_landscape,fit: BoxFit.fill,width: 75,height: 90,),
-                                Expanded(
-                                  child: Container(
-                                    margin: EdgeInsets.only(left: 5),
-                                    child: Text(widget._topComment[index].content,maxLines: 6,overflow: TextOverflow.ellipsis,style: TextStyle(fontWeight: FontWeight.w300),),
-                                  ),
-                                ),
+                                  )
+                              ), //Header
+                              Container(
+                                height: 95,
+                                margin: EdgeInsets.only(top: 10),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: <Widget>[
+                                    Image.network(widget._topComment[index].movie.poster_landscape,fit: BoxFit.fill,width: 75,height: 90,),
+                                    Expanded(
+                                      child: Container(
+                                        margin: EdgeInsets.only(left: 5),
+                                        child: Text(widget._topComment[index].content,maxLines: 6,overflow: TextOverflow.ellipsis,style: TextStyle(fontWeight: FontWeight.w300),),
+                                      ),
+                                    ),
 
-                              ],
-                            ),
-                          ),// Body
-                          Container(
-                            width: 70,
-                            margin: EdgeInsets.only(top: 10),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: <Widget>[
-                                Icon(Icons.thumb_up,size: 15,color: Colors.blueAccent,),
-                                Text(widget._topComment[index].up_vote.toString(),style: TextStyle(fontWeight: FontWeight.w300),),
-                                Text("Thích",style: TextStyle(fontWeight: FontWeight.w300),),
-                              ],
-                            ),
+                                  ],
+                                ),
+                              ),// Body
+                              Container(
+                                width: 70,
+                                margin: EdgeInsets.only(top: 10),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: <Widget>[
+                                    Icon(Icons.thumb_up,size: 15,color: Colors.blueAccent,),
+                                    Text(widget._topComment[index].up_vote.toString(),style: TextStyle(fontWeight: FontWeight.w300),),
+                                    Text("Thích",style: TextStyle(fontWeight: FontWeight.w300),),
+                                  ],
+                                ),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
+                        );
+                      },
+                    ),
+                  )
+                ],
               );
             }else{
               return Container();

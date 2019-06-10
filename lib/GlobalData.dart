@@ -65,7 +65,7 @@ class GlobalData{
     new Cinema(id: "4",name: "BHD Star Cineplex",shortName: "BHD",logo: "https://s3img.vcdn.vn/123phim/2018/09/f32670fd0eb083c9c4c804f0f3a252ed.png",color: Colors.green),
     new Cinema(id: "2",name: "Galaxy Cinema",shortName: "GLX",logo: "https://s3img.vcdn.vn/123phim/2018/09/e520781386bd5436e94d6e15e193a005.png",color: Colors.orange),
     new Cinema(id: "16",name: "CineStar",shortName: "CNS",logo: "https://s3img.vcdn.vn/123phim/2018/09/1721cfa98768f300c03792e25ceb0191.png",color: Colors.purple),
-    new Cinema(id: "6",name: "DDC - Đống Đa",shortName: "DDC",logo: "https://s3img.vcdn.vn/123phim/2018/09/9b240f96a233bb43203ee514a21a6004.png",color: Colors.green),
+    new Cinema(id: "6",name: "DDC - Đống Đa",shortName: "DDC",logo: "https://s3img.vcdn.vn/123phim/2018/09/9b240f96a233bb43203ee514a21a6004.png",color: Colors.grey),
     new Cinema(id: "17",name: "Mega GS",shortName: "MegaGS",logo: "https://s3img.vcdn.vn/123phim/2018/09/7b078639bd8fdb09dd83652d207c7b90.png",color: Colors.amberAccent),
     new Cinema(id: "1",name: "Lotte Cinema",shortName: "Lotte",logo: "https://s3img.vcdn.vn/123phim/2018/09/404b8c4b80d77732e7426cdb7e24be20.png",color: Colors.red),
   ];
