@@ -38,7 +38,7 @@ class BookingScheduleViewState extends State<BookingScheduleView>{
   int _selectedCinema = 0;
   bool _toggle = true;
   GlobalKey _keyDateView = new GlobalKey();
-  Map<String,List<CinemaSchedule>> _scheduleFiltered;
+  Map<String,List<CinemaSchedule>> _scheduleFiltered = new Map<String,List<CinemaSchedule>>();
   CinemaSchedule _scheduleDetail;
 
   @override
