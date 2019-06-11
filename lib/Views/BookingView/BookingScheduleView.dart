@@ -76,8 +76,8 @@ class BookingScheduleViewState extends State<BookingScheduleView>{
                         _selectedCinema = index;
                         _scheduleDetail = _scheduleFiltered[_scheduleFiltered.keys.elementAt(index)].first;
 
-                        //RenderBox renderBox = mContext.findRenderObject();
-                        //_scrollController.animateTo(renderBox.localToGlobal(Offset.zero).dy, duration: Duration(microseconds: 100), curve: Curves.ease);
+                        RenderBox renderBox = mContext.findRenderObject();
+                        _scrollController.animateTo(renderBox.localToGlobal(Offset.zero).dy, duration: Duration(microseconds: 1), curve: Curves.ease);
                       });
                     },
                     children: [
@@ -128,69 +128,6 @@ class BookingScheduleViewState extends State<BookingScheduleView>{
                   );
                 },
               );
-              return ExpansionPanelList(
-                key: GlobalKey(debugLabel: "key"+index.toString()),
-                animationDuration: Duration(milliseconds: 700),
-                expansionCallback: (indexChild,status){
-                  setState(() {
-                    if(_selectedCinema == index){
-                      _toggle = !_toggle;
-                    }else{
-                      _toggle = true;
-                    }
-                    _selectedCinema = index;
-                    _scheduleDetail = _scheduleFiltered[_scheduleFiltered.keys.elementAt(index)].first;
-
-
-
-                  });
-                },
-                children: [
-                  ExpansionPanel(
-                    canTapOnHeader: true,
-                    isExpanded: _selectedCinema == index && _toggle == true,
-                    headerBuilder: (context,status){
-                      return Container(
-                        child: Row(
-                          children: <Widget>[
-                            Image.network(GlobalData.parentCinema[index].logo,fit: BoxFit.fill,width: 40,),
-                            Text(GlobalData.parentCinema[index].name),
-                            Text("("+(_scheduleFiltered[_scheduleFiltered.keys.elementAt(index)].length != 0 ?_scheduleFiltered[_scheduleFiltered.keys.elementAt(index)][0].cinemas.length.toString():"0")+")"),
-                          ],
-                        ),
-                      );
-                    },
-                    body: Column(
-                      children: <Widget>[
-                        Row(
-                          mainAxisSize: MainAxisSize.min ,
-                          children: <Widget>[
-                            Flexible(
-                              child: ListView.builder(
-                                shrinkWrap: true,
-                                physics: NeverScrollableScrollPhysics(),
-                                itemCount: _scheduleDetail != null?_scheduleDetail.cinemas.length:0,
-                                itemBuilder: (context,indexChild){
-                                  return Container(
-                                    height: 40,
-                                    child: Row(
-                                      children: <Widget>[
-                                        Text(GlobalData.parentCinema[index].shortName,style: TextStyle(color: GlobalData.parentCinema[index].color),),
-                                        Text(" - "+_scheduleDetail.cinemas[indexChild].cinema_name_s2)
-                                      ],
-                                    ),
-                                  );
-                                },
-                              ),
-                            )
-                          ],
-                        ),
-
-                      ],
-                    ),
-                  )
-                ],
-              );
             },
           ),
         ),
@@ -206,21 +143,28 @@ class BookingScheduleViewState extends State<BookingScheduleView>{
     Widget returnWidget = RefreshIndicator(
       onRefresh: () async{
         setState(() {
+          widget._schedule =  new Map<String,List<CinemaSchedule>>();
+          _scheduleFiltered = new Map<String,List<CinemaSchedule>>();
         });
       },
       child: FutureBuilder(
-          future: widget._schedule.length == 0?widget._cinemaSchedule.GetScheduleByGroup(filmId:widget._movie.film_id,startDate:format.format(DateTime.now()),endDate:format.format(DateTime.now().add(Duration(days: 7)))):Future<Map<String,List<CinemaSchedule>>>(()=>widget._schedule),
+          future: widget._schedule.length == 0?widget._cinemaSchedule.GetScheduleByGroup(filmId:widget._movie.film_id,startDate:format.format(DateTime.now()),endDate:format.format(DateTime.now().add(Duration(days: 7)))):new Future<Map<String,List<CinemaSchedule>>>(()=>widget._schedule),
           builder: (context,snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting && widget._schedule.length == 0)
               return Container();
             else{
-              widget._schedule = snapshot.data;
-              _scheduleFiltered = Map<String,List<CinemaSchedule>>();
-              widget._schedule.forEach((key,value){
-                _scheduleFiltered.addAll({
-                  key:value.where((x)=> x.date == DateFormat("yyyyMMdd").format(DateTime.now())).toList()
+              if(snapshot.data != null){
+                widget._schedule = snapshot.data;
+              }
+
+              if(_scheduleFiltered.length == 0){
+                widget._schedule.forEach((key,value){
+                  _scheduleFiltered.addAll({
+                    key:value.where((x)=> x.date == DateFormat("yyyyMMdd").format(DateTime.now())).toList()
+                  });
                 });
-              });
+              }
+
               _scheduleDetail = _scheduleDetail == null? _scheduleFiltered[_scheduleFiltered.keys.elementAt(0)].first:_scheduleDetail;
               return Container(
                 color: Colors.white,
@@ -320,6 +264,7 @@ class BookingScheduleViewState extends State<BookingScheduleView>{
                                       onTap: (){
                                         setState(() {
                                           _selectedDay = index;
+                                          _scheduleFiltered.clear();
                                           widget._schedule.forEach((key,value){
                                             _scheduleFiltered.addAll({
                                               key:value.where((x)=> x.date == DateFormat("yyyyMMdd").format(DateTime.now().add(Duration(days: index)))).toList()
