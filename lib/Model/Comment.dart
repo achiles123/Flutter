@@ -81,10 +81,13 @@ class Comment{
     List<Comment> result = new List<Comment>();
     for(int movieId in listMovie){
       result = await GetByMovie(movieId,count: 10).then((items) {
-        items.sort((item1,item2) => int.parse(item1.rate)<int.parse(item2.rate)?1:-1);
-        if(items.length != 0){
-          result.add(items[0]);
+        if(items!= null){
+          items.sort((item1,item2) => int.parse(item1.rate)<int.parse(item2.rate)?1:-1);
+          if(items.length != 0){
+            result.add(items[0]);
+          }
         }
+
 
         return result;
       });

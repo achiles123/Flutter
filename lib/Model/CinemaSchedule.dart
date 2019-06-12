@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 import '../GlobalData.dart';
-import 'CInemaAddress.dart';
+import 'CinemaAddress.dart';
 
 class CinemaSchedule{
   final List<CinemaAddress> cinemas;
@@ -14,10 +14,16 @@ class CinemaSchedule{
 
   CinemaSchedule({this.cinemas,this.date,this.p_cinema_id,this.p_cinema_logo,this.p_cinema_logo_square,this.p_cinema_name});
 
-  factory CinemaSchedule.parseJson(Map<String,dynamic> json){
+  static CinemaSchedule parseJson(Map<String,dynamic> json)  {
     Map<String,dynamic> cinemas = json["cinemas"];
+    List<CinemaAddress> cinemaAddressList = new List<CinemaAddress>();
+    json["parent_cinema"] = json["p_cinema_id"];
+    for(dynamic address in cinemas.values){
+      CinemaAddress cinemaAddress =  CinemaAddress.partseJson(address);
+      cinemaAddressList.add(cinemaAddress);
+    }
     return CinemaSchedule(
-        cinemas: cinemas.values.map((x) => CinemaAddress.partseJson(x)).toList(),
+        cinemas:  cinemaAddressList,
         date: json["date"],
         p_cinema_id: json["p_cinema_id"],
         p_cinema_logo: json["p_cinema_logo"],
@@ -26,17 +32,20 @@ class CinemaSchedule{
     );
   }
   
-  Future<List<CinemaSchedule>> GetSchedule({int filmId,String startDate,String endDate}) async {
+  Future<List<CinemaSchedule>> GetSchedule({int filmId,String startDate,String endDate,String parent_cinema}) async {
     List<CinemaSchedule> result = new List<CinemaSchedule>();
     await http.post(
         "https://123phim.vn/apitomapp",
         headers: {"Content-Type":"application/json;charset=UTF-8"},
         body: '{"param":{"url":"/session/film?cinema_id=-1&film_id='+filmId.toString()+'&start_date='+startDate+'&end_date='+endDate+'&location_id='+(GlobalData.locationId+1).toString()+'","keyCache":"no-cache"},"method":"GET"}'
-    ).then((response){
+    ).then((response)  {
       if(response.statusCode == 200){
         List<dynamic> originData = json.decode(response.body)["result"];
         for(Map<String,dynamic> item in originData){
-          result.addAll(item.values.map((f)=> CinemaSchedule.parseJson(f)).toList());
+          for(var schedule in item.values){
+            var rs = CinemaSchedule.parseJson(schedule);
+            result.add(rs);
+          }
         }
       }
 

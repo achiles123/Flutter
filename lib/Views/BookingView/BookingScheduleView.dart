@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_app/Model/CinemaSchedule.dart';
 import 'package:flutter_app/Model/Movie.dart';
+import 'package:flutter_app/Model/TicketPrice.dart';
 import 'package:intl/intl.dart';
 
 import '../../GlobalData.dart';
@@ -149,9 +150,10 @@ class BookingScheduleViewState extends State<BookingScheduleView>{
       },
       child: FutureBuilder(
           future: widget._schedule.length == 0?widget._cinemaSchedule.GetScheduleByGroup(filmId:widget._movie.film_id,startDate:format.format(DateTime.now()),endDate:format.format(DateTime.now().add(Duration(days: 7)))):new Future<Map<String,List<CinemaSchedule>>>(()=>widget._schedule),
+          //future: TicketPrice.GetBySession("385000863"),
           builder: (context,snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting && widget._schedule.length == 0)
-              return Container();
+              return Center(child: CircularProgressIndicator(),);
             else{
               if(snapshot.data != null){
                 widget._schedule = snapshot.data;
@@ -263,6 +265,7 @@ class BookingScheduleViewState extends State<BookingScheduleView>{
                                     child: InkWell(
                                       onTap: (){
                                         setState(() {
+                                          _toggle = false;
                                           _selectedDay = index;
                                           _scheduleFiltered.clear();
                                           widget._schedule.forEach((key,value){
