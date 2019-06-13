@@ -95,7 +95,7 @@ class TicketPrice{
         });
       }
     }).catchError((error){
-        int c =1;
+
     });
     return result;
   }

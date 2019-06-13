@@ -14,11 +14,11 @@ class CinemaSchedule{
 
   CinemaSchedule({this.cinemas,this.date,this.p_cinema_id,this.p_cinema_logo,this.p_cinema_logo_square,this.p_cinema_name});
 
-  static CinemaSchedule parseJson(Map<String,dynamic> json)  {
+   factory CinemaSchedule.parseJson(Map<String,dynamic> json)  {
     Map<String,dynamic> cinemas = json["cinemas"];
     List<CinemaAddress> cinemaAddressList = new List<CinemaAddress>();
-    json["parent_cinema"] = json["p_cinema_id"];
     for(dynamic address in cinemas.values){
+      address["parent_cinema"] = json["p_cinema_id"];
       CinemaAddress cinemaAddress =  CinemaAddress.partseJson(address);
       cinemaAddressList.add(cinemaAddress);
     }

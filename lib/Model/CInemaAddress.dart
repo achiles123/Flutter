@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 import '../GlobalData.dart';
+import 'Cinema.dart';
 import 'TicketPrice.dart';
 
 class CinemaAddress{
@@ -19,13 +20,12 @@ class CinemaAddress{
   String session_code;
   String session_id;
   List<TicketPrice> ticket_price;
-  static Map<String,dynamic> _versions;
+  Map<String,dynamic> versions;
 
   CinemaAddress({this.cinema_address,this.cinema_id,this.cinema_image,this.cinema_latitude,this.cinema_longitude,this.cinema_name,this.cinema_name_s1,
-    this.cinema_name_s2,this.cinema_slug,this.ticket_price,this.parent_cinema});
+    this.cinema_name_s2,this.cinema_slug,this.ticket_price,this.parent_cinema,this.versions});
 
-  static CinemaAddress partseJson(Map<String,dynamic> json){
-    _versions = json["versions"];
+  factory CinemaAddress.partseJson(Map<String,dynamic> json){
     return CinemaAddress(
       cinema_address: json["cinema_address"],
       cinema_id: json["cinema_id"],
@@ -37,13 +37,14 @@ class CinemaAddress{
       cinema_name_s2: json["cinema_name_s2"],
       cinema_slug: json["cinema_slug"],
       parent_cinema: json["parent_cinema"],
-      //ticket_price: ticketPrices,
+      ticket_price: new List<TicketPrice>(),
+      versions: json["versions"],
     );
   }
 
   Future<List<TicketPrice>> GetTicketPrice() async {
     List<TicketPrice> ticketPrices = new List<TicketPrice>();
-    for(var itemVersion in _versions.entries){
+    for(var itemVersion in versions.entries){
       String version = "";
       switch(itemVersion.key){
         case "2_0":version = "2D";break;
@@ -57,8 +58,14 @@ class CinemaAddress{
         String sessionStatus = session["session_status"];
         String sessionTime = session["session_time"];
         session_id = sessionId;
-
-        String cinemaName = GlobalData.parentCinema.where((x)=>x.id == parent_cinema).first.shortName;
+        String cinemaName = "";
+        for(Cinema itemCinema in GlobalData.parentCinema){
+          if(itemCinema.id == parent_cinema){
+            cinemaName = itemCinema.shortName;
+          }
+        }
+        if(cinemaName == null)
+          break;
         Map<String,dynamic> sessionData = await GetSession(sessionId);
         if(sessionData == null)
           continue;
@@ -79,16 +86,16 @@ class CinemaAddress{
   }
 
   Future<Map<String,dynamic >> GetSession(String sessionId) async {
-    Map<String,dynamic> result = await http.post(
+    Map<String,dynamic> result;
+    await http.post(
       "https://123phim.vn/apitomapp",
       headers: {"Content-Type":"application/json; charset=utf-8"},
       body: '{"param":{"url":"/session/detail?session_id='+sessionId+'","keyCache":"no-cache"},"method":"GET"}',
     ).then((response){
       if(response.statusCode == 200){
-        return json.decode(response.body)["result"][0];
+        result = json.decode(response.body)["result"][0];
       }
     }).catchError((error){
-
     });
     return result;
   }

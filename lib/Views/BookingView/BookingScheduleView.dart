@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:flutter_app/CustomWidget/ExpansionPanelCustom.dart';
 import 'package:flutter_app/Model/CinemaSchedule.dart';
 import 'package:flutter_app/Model/Movie.dart';
 import 'package:flutter_app/Model/TicketPrice.dart';
@@ -37,7 +38,9 @@ class BookingScheduleViewState extends State<BookingScheduleView>{
   bool _viewType = true;
   int _selectedDay = 0;
   int _selectedCinema = 0;
+  int _selectedCinemaAddress = 0;
   bool _toggle = true;
+  String _cinemaKey;
   GlobalKey _keyDateView = new GlobalKey();
   Map<String,List<CinemaSchedule>> _scheduleFiltered = new Map<String,List<CinemaSchedule>>();
   CinemaSchedule _scheduleDetail;
@@ -75,7 +78,8 @@ class BookingScheduleViewState extends State<BookingScheduleView>{
                           _toggle = true;
                         }
                         _selectedCinema = index;
-                        _scheduleDetail = _scheduleFiltered[_scheduleFiltered.keys.elementAt(index)].first;
+                        _cinemaKey = _scheduleFiltered.keys.elementAt(index);
+                        _scheduleDetail = _scheduleFiltered[_cinemaKey].first;
 
                         RenderBox renderBox = mContext.findRenderObject();
                         _scrollController.animateTo(renderBox.localToGlobal(Offset.zero).dy, duration: Duration(microseconds: 1), curve: Curves.ease);
@@ -91,11 +95,11 @@ class BookingScheduleViewState extends State<BookingScheduleView>{
                               children: <Widget>[
                                 Image.network(GlobalData.parentCinema[index].logo,fit: BoxFit.fill,width: 40,),
                                 Text(GlobalData.parentCinema[index].name),
-                                Text("("+(_scheduleFiltered[_scheduleFiltered.keys.elementAt(index)].length != 0 ?_scheduleFiltered[_scheduleFiltered.keys.elementAt(index)][0].cinemas.length.toString():"0")+")"),
+                                Text("("+(_scheduleFiltered[_cinemaKey].length != 0 ?_scheduleFiltered[_cinemaKey][0].cinemas.length.toString():"0")+")"),
                               ],
                             ),
                           );
-                        },
+                        },// Cinema root
                         body: Column(
                           children: <Widget>[
                             Row(
@@ -107,6 +111,47 @@ class BookingScheduleViewState extends State<BookingScheduleView>{
                                     physics: NeverScrollableScrollPhysics(),
                                     itemCount: _scheduleDetail != null?_scheduleDetail.cinemas.length:0,
                                     itemBuilder: (context,indexChild){
+                                      return ExpansionPanelListCustom(
+                                        animationDuration: Duration(milliseconds: 700),
+                                        expansionCallback:  (childIndex,status) async {
+                                          if(_scheduleDetail.cinemas[indexChild].ticket_price.length == 0){
+                                            await _scheduleDetail.cinemas[indexChild].GetTicketPrice();
+                                          }
+                                          _selectedCinemaAddress = indexChild;
+                                        },
+                                        children: [
+                                          ExpansionPanelCustom(
+                                              canTapOnHeader: true,
+                                              isExpanded: _selectedCinemaAddress == indexChild,
+                                              headerBuilder: (context,status){
+                                                return Container(
+                                                  child: Row(
+                                                    children: <Widget>[
+                                                      Text(GlobalData.parentCinema[index].shortName,style: TextStyle(color: GlobalData.parentCinema[index].color),),
+                                                      Text(" - "+_scheduleDetail.cinemas[indexChild].cinema_name_s2)
+                                                    ],
+                                                  ),
+                                                );
+                                              },// Cinema Address
+                                              body: ListView.builder(
+                                                shrinkWrap: true,
+                                                physics: NeverScrollableScrollPhysics(),
+                                                itemCount: _scheduleDetail.cinemas[indexChild].ticket_price.length,
+                                                itemBuilder: (context,indexTicket){
+                                                  return Row(
+                                                    children: <Widget>[
+                                                      Text(_scheduleDetail.cinemas[indexChild].ticket_price[indexTicket].room_title,style: TextStyle(color: GlobalData.parentCinema[index].color),),
+
+                                                    ],
+                                                  );// Cinema Ticket Price
+                                                },
+                                              )
+
+
+
+                                          )
+                                        ],
+                                      );
                                       return Container(
                                         height: 40,
                                         child: Row(
@@ -166,7 +211,7 @@ class BookingScheduleViewState extends State<BookingScheduleView>{
                   });
                 });
               }
-
+              _cinemaKey = _scheduleFiltered.keys.elementAt(0);
               _scheduleDetail = _scheduleDetail == null? _scheduleFiltered[_scheduleFiltered.keys.elementAt(0)].first:_scheduleDetail;
               return Container(
                 color: Colors.white,
