@@ -95,7 +95,7 @@ class BookingScheduleViewState extends State<BookingScheduleView>{
                               children: <Widget>[
                                 Image.network(GlobalData.parentCinema[index].logo,fit: BoxFit.fill,width: 40,),
                                 Text(GlobalData.parentCinema[index].name),
-                                Text("("+(_scheduleFiltered[_cinemaKey].length != 0 ?_scheduleFiltered[_cinemaKey][0].cinemas.length.toString():"0")+")"),
+                                Text("("+(_scheduleFiltered[_scheduleFiltered.keys.elementAt(index)].length != 0 ?_scheduleFiltered[_scheduleFiltered.keys.elementAt(index)][0].cinemas.length.toString():"0")+")"),
                               ],
                             ),
                           );
@@ -113,10 +113,7 @@ class BookingScheduleViewState extends State<BookingScheduleView>{
                                     itemBuilder: (context,indexChild){
                                       return ExpansionPanelListCustom(
                                         animationDuration: Duration(milliseconds: 700),
-                                        expansionCallback:  (childIndex,status) async {
-                                          if(_scheduleDetail.cinemas[indexChild].ticket_price.length == 0){
-                                            await _scheduleDetail.cinemas[indexChild].GetTicketPrice();
-                                          }
+                                        expansionCallback:  (childIndex,status) {
                                           _selectedCinemaAddress = indexChild;
                                         },
                                         children: [
@@ -133,22 +130,51 @@ class BookingScheduleViewState extends State<BookingScheduleView>{
                                                   ),
                                                 );
                                               },// Cinema Address
-                                              body: ListView.builder(
-                                                shrinkWrap: true,
-                                                physics: NeverScrollableScrollPhysics(),
-                                                itemCount: _scheduleDetail.cinemas[indexChild].ticket_price.length,
-                                                itemBuilder: (context,indexTicket){
-                                                  return Row(
-                                                    children: <Widget>[
-                                                      Text(_scheduleDetail.cinemas[indexChild].ticket_price[indexTicket].room_title,style: TextStyle(color: GlobalData.parentCinema[index].color),),
+                                              body: FutureBuilder(
+                                                future: _scheduleDetail.cinemas[indexChild].ticket_price.length == 0?_scheduleDetail.cinemas[indexChild].GetTicketPrice():Future<List<TicketPrice>>(()=>_scheduleDetail.cinemas[indexChild].ticket_price),
+                                                builder: (context,snapshot){
+                                                  if(snapshot.connectionState == ConnectionState.waiting && _scheduleDetail.cinemas[indexChild].ticket_price.length == 0){
+                                                    if(_selectedCinemaAddress == indexChild)
+                                                      return Container(padding: EdgeInsets.all(10),child:  CircularProgressIndicator(),);
+                                                    else
+                                                      return Container();
+                                                  }else{
+                                                    if(_scheduleDetail.cinemas[indexChild].ticket_price.length != 0){
+                                                      List<TicketPrice> filteredPrice = _scheduleDetail.cinemas[indexChild].ticket_price.where((x)=> x.area_id == 2).toList();
+                                                      DateFormat formatDate = new DateFormat("yyyy-MM-dd HH:mm:ss");
+                                                      DateFormat formatTime = new DateFormat("HH:mm");
+                                                      return ListView.builder(
+                                                        shrinkWrap: true,
+                                                        physics: NeverScrollableScrollPhysics(),
+                                                        itemCount: filteredPrice.length,
+                                                        itemBuilder: (context,indexTicket){
+                                                          return Container(
+                                                            padding:EdgeInsets.all(7),
+                                                            child: Row(
+                                                              children: <Widget>[
+                                                                Text(formatTime.format(formatDate.parse(filteredPrice[indexTicket].session_time)),style: TextStyle(fontSize: 18,fontWeight: FontWeight.w400),),
+                                                                Text(" ~ ",style: TextStyle(color: Colors.black38),),
+                                                                Text(formatTime.format(formatDate.parse(filteredPrice[indexTicket].session_time).add(Duration(minutes:widget._movie.film_information.film_duration))),style: TextStyle(color: Colors.black38),),
+                                                                Spacer(),
+                                                                Text(filteredPrice[indexTicket].version+" - Phụ đề",style: TextStyle(color: Colors.black38),),
+                                                                Spacer(),
+                                                                Text("~"+(filteredPrice[indexTicket].type_price~/1000).toString()+"k",style: TextStyle(color: Colors.black38),),
+                                                              ],
+                                                            ),
+                                                          );// Cinema Ticket Price
+                                                        },
+                                                      );
+                                                    }else{
+                                                      if(snapshot.connectionState == ConnectionState.done && _scheduleDetail.cinemas[indexChild].ticket_price.length == 0)
+                                                        return Container();
+                                                      else
+                                                        return Container(padding: EdgeInsets.all(10),child:  CircularProgressIndicator(),);
+                                                    }
 
-                                                    ],
-                                                  );// Cinema Ticket Price
+                                                  }
+
                                                 },
                                               )
-
-
-
                                           )
                                         ],
                                       );
@@ -185,182 +211,195 @@ class BookingScheduleViewState extends State<BookingScheduleView>{
   @override
   Widget build(BuildContext context) {
     DateFormat format = new DateFormat("yyyy-MM-dd");
-     // TODO: implement build
+    // TODO: implement build
     Widget returnWidget = RefreshIndicator(
-      onRefresh: () async{
-        setState(() {
-          widget._schedule =  new Map<String,List<CinemaSchedule>>();
-          _scheduleFiltered = new Map<String,List<CinemaSchedule>>();
-        });
-      },
-      child: FutureBuilder(
-          future: widget._schedule.length == 0?widget._cinemaSchedule.GetScheduleByGroup(filmId:widget._movie.film_id,startDate:format.format(DateTime.now()),endDate:format.format(DateTime.now().add(Duration(days: 7)))):new Future<Map<String,List<CinemaSchedule>>>(()=>widget._schedule),
-          //future: TicketPrice.GetBySession("385000863"),
-          builder: (context,snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting && widget._schedule.length == 0)
-              return Center(child: CircularProgressIndicator(),);
-            else{
-              if(snapshot.data != null){
-                widget._schedule = snapshot.data;
-              }
+        onRefresh: () async{
+          setState(() {
+            widget._schedule =  new Map<String,List<CinemaSchedule>>();
+            _scheduleFiltered = new Map<String,List<CinemaSchedule>>();
+          });
+        },
+        child: Stack(
+          children: <Widget>[
+            FutureBuilder(
+              future: widget._movie.film_information == null?widget._movie.GetInformation():Future(()=> null),
+              builder: (context,snapshot){
+                return Container();
+              },
+            ),
+            FutureBuilder(
+                future: widget._schedule.length == 0?widget._cinemaSchedule.GetScheduleByGroup(filmId:widget._movie.film_id,startDate:format.format(DateTime.now()),endDate:format.format(DateTime.now().add(Duration(days: 7)))):new Future<Map<String,List<CinemaSchedule>>>(()=>widget._schedule),
+                //future: TicketPrice.GetBySession("385000863"),
+                builder: (context,snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting && widget._schedule.length == 0)
+                    return Center(child: CircularProgressIndicator(),);
+                  else{
+                    if(snapshot.data != null){
+                      widget._schedule = snapshot.data;
+                    }
 
-              if(_scheduleFiltered.length == 0){
-                widget._schedule.forEach((key,value){
-                  _scheduleFiltered.addAll({
-                    key:value.where((x)=> x.date == DateFormat("yyyyMMdd").format(DateTime.now())).toList()
-                  });
-                });
-              }
-              _cinemaKey = _scheduleFiltered.keys.elementAt(0);
-              _scheduleDetail = _scheduleDetail == null? _scheduleFiltered[_scheduleFiltered.keys.elementAt(0)].first:_scheduleDetail;
-              return Container(
-                color: Colors.white,
-                height: double.infinity,
-                child: ListView(
-                  controller: _scrollController,
-                  shrinkWrap: true,
-                  physics: AlwaysScrollableScrollPhysics(),
-                  children: <Widget>[
-                    Container(
-                      height: 50,
-                      padding: EdgeInsets.all(7),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: <Widget>[
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: <Widget>[
-                              Text("Vị trí hiện tại",style: TextStyle(color: Colors.black38,fontWeight: FontWeight.w400),),
-                              Text(
-                                  GlobalData.locations.containsKey(GlobalData.locationId)?GlobalData.locations[GlobalData.locationId]:"",
-                                  style: TextStyle(fontSize: 16,fontWeight: FontWeight.w400)),
-                            ],
-                          ),
-                          Spacer(),
-                          Switch(
-                            activeColor: Colors.deepOrangeAccent,
-                            value: GlobalData.locationId == -1?false:true,
-                            onChanged: (value){
-                              if(value == false){
-                                setState(() {
-                                  GlobalData.locationId = -1;
-                                });
-                              }else{
-                                showDialog(
-                                    context: context,
-                                    barrierDismissible: false,
-                                    builder: (context){
-                                      return new LocationPopup();
-                                    }
-                                );
-                              }
-                            },
-
-                          ),
-
-                        ],
-                      ),
-                    ),// Change Location
-                    Divider(),
-                    Container(
-                      height: 50,
-                      width: MediaQuery.of(context).size.width,
-                      padding: EdgeInsets.all(7),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: <Widget>[
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: <Widget>[
-                              Text("Lịch chiếu",style: TextStyle(color: Colors.black38,fontWeight: FontWeight.w400),),
-                              Text(
-                                  _viewType?"Gộp nhóm":"Liệt kê",
-                                  style: TextStyle(fontSize: 16,fontWeight: FontWeight.w400)),
-                            ],
-                          ),
-                          Spacer(),
-                          Switch(
-                            activeColor: Colors.deepOrangeAccent,
-                            value: _viewType,
-                            onChanged: (value){
-                              setState(() {
-                                _viewType = value;
-                              });
-                            },
-
-                          ),
-
-                        ],
-                      ),
-                    ),// Change View
-                    Divider(),
-                    Container(
-                      key: _keyDateView,
-                      child: Column(
+                    if(_scheduleFiltered.length == 0){
+                      widget._schedule.forEach((key,value){
+                        _scheduleFiltered.addAll({
+                          key:value.where((x)=> x.date == DateFormat("yyyyMMdd").format(DateTime.now())).toList()
+                        });
+                      });
+                    }
+                    _cinemaKey = _scheduleFiltered.keys.elementAt(0);
+                    _scheduleDetail = _scheduleDetail == null? _scheduleFiltered[_scheduleFiltered.keys.elementAt(0)].first:_scheduleDetail;
+                    return Container(
+                      color: Colors.white,
+                      height: double.infinity,
+                      child: ListView(
+                        controller: _scrollController,
+                        shrinkWrap: true,
+                        physics: AlwaysScrollableScrollPhysics(),
                         children: <Widget>[
                           Container(
                             height: 50,
-                            child: ListView.builder(
-                              shrinkWrap: true,
-                              scrollDirection: Axis.horizontal,
-                              itemCount: 7,
-                              itemBuilder: (context,index){
-                                return Container(
-                                    width: MediaQuery.of(context).size.width/6,
-                                    child: InkWell(
-                                      onTap: (){
-                                        setState(() {
-                                          _toggle = false;
-                                          _selectedDay = index;
-                                          _scheduleFiltered.clear();
-                                          widget._schedule.forEach((key,value){
-                                            _scheduleFiltered.addAll({
-                                              key:value.where((x)=> x.date == DateFormat("yyyyMMdd").format(DateTime.now().add(Duration(days: index)))).toList()
-                                            });
-                                          });
-                                        });
-                                      },
-                                      child: Column(
-                                        children: <Widget>[
-                                          Text(Helper.GetNameOfDate(DateTime.now().add(Duration(days: index))),style: TextStyle(fontSize: 14,color: index == _selectedDay?Colors.deepOrangeAccent:Colors.black),),
-                                          Expanded(
-                                            child: Container(
-                                                alignment: Alignment.center,
-                                                width: MediaQuery.of(context).size.width/6,
-                                                decoration: BoxDecoration(
-                                                  shape: index == _selectedDay?BoxShape.circle:BoxShape.rectangle,
-                                                  color: index == _selectedDay?Colors.deepOrange:Colors.transparent,
-                                                ),
-                                                child: Text(DateTime.now().add(Duration(days: index)).day.toString(),style: TextStyle(color: index == _selectedDay?Colors.white:Colors.black),textAlign: TextAlign.center,)
-                                            ),
-                                          ),
+                            padding: EdgeInsets.all(7),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: <Widget>[
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: <Widget>[
+                                    Text("Vị trí hiện tại",style: TextStyle(color: Colors.black38,fontWeight: FontWeight.w400),),
+                                    Text(
+                                        GlobalData.locations.containsKey(GlobalData.locationId)?GlobalData.locations[GlobalData.locationId]:"",
+                                        style: TextStyle(fontSize: 16,fontWeight: FontWeight.w400)),
+                                  ],
+                                ),
+                                Spacer(),
+                                Switch(
+                                  activeColor: Colors.deepOrangeAccent,
+                                  value: GlobalData.locationId == -1?false:true,
+                                  onChanged: (value){
+                                    if(value == false){
+                                      setState(() {
+                                        GlobalData.locationId = -1;
+                                      });
+                                    }else{
+                                      showDialog(
+                                          context: context,
+                                          barrierDismissible: false,
+                                          builder: (context){
+                                            return new LocationPopup();
+                                          }
+                                      );
+                                    }
+                                  },
 
-                                        ],
-                                      ),
-                                    )
-                                );
-                              },
+                                ),
+
+                              ],
                             ),
+                          ),// Change Location
+                          Divider(),
+                          Container(
+                            height: 50,
+                            width: MediaQuery.of(context).size.width,
+                            padding: EdgeInsets.all(7),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: <Widget>[
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: <Widget>[
+                                    Text("Lịch chiếu",style: TextStyle(color: Colors.black38,fontWeight: FontWeight.w400),),
+                                    Text(
+                                        _viewType?"Gộp nhóm":"Liệt kê",
+                                        style: TextStyle(fontSize: 16,fontWeight: FontWeight.w400)),
+                                  ],
+                                ),
+                                Spacer(),
+                                Switch(
+                                  activeColor: Colors.deepOrangeAccent,
+                                  value: _viewType,
+                                  onChanged: (value){
+                                    setState(() {
+                                      _viewType = value;
+                                    });
+                                  },
+
+                                ),
+
+                              ],
+                            ),
+                          ),// Change View
+                          Divider(),
+                          Container(
+                            key: _keyDateView,
+                            child: Column(
+                              children: <Widget>[
+                                Container(
+                                  height: 50,
+                                  child: ListView.builder(
+                                    shrinkWrap: true,
+                                    scrollDirection: Axis.horizontal,
+                                    itemCount: 7,
+                                    itemBuilder: (context,index){
+                                      return Container(
+                                          width: MediaQuery.of(context).size.width/6,
+                                          child: InkWell(
+                                            onTap: (){
+                                              setState(() {
+                                                _toggle = false;
+                                                _selectedDay = index;
+                                                _scheduleFiltered.clear();
+                                                widget._schedule.forEach((key,value){
+                                                  _scheduleFiltered.addAll({
+                                                    key:value.where((x)=> x.date == DateFormat("yyyyMMdd").format(DateTime.now().add(Duration(days: index)))).toList()
+                                                  });
+                                                });
+                                              });
+                                            },
+                                            child: Column(
+                                              children: <Widget>[
+                                                Text(Helper.GetNameOfDate(DateTime.now().add(Duration(days: index))),style: TextStyle(fontSize: 14,color: index == _selectedDay?Colors.deepOrangeAccent:Colors.black),),
+                                                Expanded(
+                                                  child: Container(
+                                                      alignment: Alignment.center,
+                                                      width: MediaQuery.of(context).size.width/6,
+                                                      decoration: BoxDecoration(
+                                                        shape: index == _selectedDay?BoxShape.circle:BoxShape.rectangle,
+                                                        color: index == _selectedDay?Colors.deepOrange:Colors.transparent,
+                                                      ),
+                                                      child: Text(DateTime.now().add(Duration(days: index)).day.toString(),style: TextStyle(color: index == _selectedDay?Colors.white:Colors.black),textAlign: TextAlign.center,)
+                                                  ),
+                                                ),
+
+                                              ],
+                                            ),
+                                          )
+                                      );
+                                    },
+                                  ),
+                                ),
+
+                              ],
+                            ),
+                          ),// Date View
+                          Container(
+                            alignment: Alignment.center,
+                            padding: EdgeInsets.all(5),
+                            child: Text(Helper.GetFullNameOfDate(DateTime.now().add(Duration(days: _selectedDay))),style: TextStyle(color: Colors.black54),),
                           ),
+                          GetSchedule(),
+
 
                         ],
                       ),
-                    ),// Date View
-                    Container(
-                      alignment: Alignment.center,
-                      padding: EdgeInsets.all(5),
-                      child: Text(Helper.GetFullNameOfDate(DateTime.now().add(Duration(days: _selectedDay))),style: TextStyle(color: Colors.black54),),
-                    ),
-                    GetSchedule(),
 
 
-                  ],
-                ),
+                    );
+                  }
+                }),
+
+          ],
+        )
 
 
-              );
-            }
-          }),
     );
     return returnWidget;
   }

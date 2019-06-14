@@ -26,6 +26,7 @@ class CinemaAddress{
     this.cinema_name_s2,this.cinema_slug,this.ticket_price,this.parent_cinema,this.versions});
 
   factory CinemaAddress.partseJson(Map<String,dynamic> json){
+
     return CinemaAddress(
       cinema_address: json["cinema_address"],
       cinema_id: json["cinema_id"],
@@ -44,6 +45,7 @@ class CinemaAddress{
 
   Future<List<TicketPrice>> GetTicketPrice() async {
     List<TicketPrice> ticketPrices = new List<TicketPrice>();
+    Stopwatch sw = new Stopwatch();
     for(var itemVersion in versions.entries){
       String version = "";
       switch(itemVersion.key){
@@ -61,31 +63,45 @@ class CinemaAddress{
         String cinemaName = "";
         for(Cinema itemCinema in GlobalData.parentCinema){
           if(itemCinema.id == parent_cinema){
-            cinemaName = itemCinema.shortName;
+            cinemaName = itemCinema.fetchName;
           }
         }
-        if(cinemaName == null)
-          break;
         Map<String,dynamic> sessionData = await GetSession(sessionId);
         if(sessionData == null)
           continue;
         cinema_code = sessionData["cinema_code"];
         session_code = sessionData["session_code"];
-        List<TicketPrice> prices = await TicketPrice.GetPrice(sessionId,session_code,cinemaName,cinema_code);
+        List<TicketPrice> prices = new List<TicketPrice>();
+        if(parent_cinema == "16"){
+          prices  = await TicketPrice.GetPriceRoom(sessionId);
+        }else{
+          sw.start();
+          prices = await TicketPrice.GetPrice(sessionId,session_code,cinemaName,cinema_code);
+          sw.stop();
+          int a = 1;
+        }
+
         prices.forEach((price){
           price.session_id = sessionId;
           price.session_link = sessionLink;
           price.session_status = sessionStatus;
           price.session_time = sessionTime;
+          price.version = version;
+          if(parent_cinema == "16"){
+            price.cinema_id = sessionData["cinema_id"];
+            price.room_title = sessionData["room_name"];
+          }
           ticketPrices.add(price);
         });
       }
     }
+
     ticket_price = ticketPrices;
     return ticketPrices;
   }
 
   Future<Map<String,dynamic >> GetSession(String sessionId) async {
+
     Map<String,dynamic> result;
     await http.post(
       "https://123phim.vn/apitomapp",

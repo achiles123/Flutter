@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
+import 'MovieInformation.dart';
+
 class Movie{
   final double avg_point;
   final double avg_point_all;
@@ -33,6 +35,7 @@ class Movie{
   final double status_id;
   final double total_rating;
   final double type_id;
+  MovieInformation film_information;
 
   Movie({
     this.avg_point,this.avg_point_all,this.avg_point_showing,this.count_comment,this.count_like,this.count_share,this.film_age,this.film_duration,this.film_id,
@@ -119,6 +122,22 @@ class Movie{
       }
     });
     return result;
+  }
+
+  Future<MovieInformation> GetInformation() async {
+    await http.post(
+      "https://123phim.vn/apitomapp",
+      headers: {"Content-Type": "application/json;charset=UTF-8"},
+      body: '{"param":{"url":"/film/detail?film_id='+film_id.toString()+'","keyCache":"movie-detail'+film_id.toString()+'"},"method":"GET"}'
+    ).then((response){
+      if(response.statusCode == 200){
+        film_information = MovieInformation.parseJson(json.decode(response.body)["result"]);
+      }
+    }).catchError((error){
+
+    });
+    int a = 1;
+    return film_information;
   }
 
 }

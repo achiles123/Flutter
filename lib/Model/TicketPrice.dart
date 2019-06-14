@@ -1,5 +1,6 @@
+import 'dart:_http';
 import 'dart:convert';
-
+import 'dart:convert' show UTF8;
 import 'package:http/http.dart' as http;
 
 class TicketPrice{
@@ -58,12 +59,21 @@ class TicketPrice{
 
   static Future<List<TicketPrice>> GetPrice(String sessionId,String sessionCode,String name,String cinemaCode) async {
     List<TicketPrice> result = new List<TicketPrice>();
+    var httpClient = new HttpClient();
+    var uri = new Uri.https('api.github.com', '/users/1');
+    var request = await httpClient.getUrl(uri);
+    var response = await request.close();
+    var responseBody = await response.transform(UTF8.decoder).join();
+    return result;
+    Stopwatch sw = new Stopwatch();
+    sw.start();
     var data = await http.post(
       "https://123phim.vn/apitomapp",
       headers: {"Content-Type": "application/json;charset=UTF-8"},
       body: '{"param":{"url":"/checkout/'+name+'/ticket?session_id='+sessionId+'&session_code='+sessionCode+'&cinema_code='+cinemaCode+'","keyCache":"no-cache"},"method":"GET"}'
 
     ).then((response){
+      sw.stop();
       if(response.statusCode == 200){
         Map<String,dynamic> rs = json.decode(response.body)["result"];
         if(rs == null)
@@ -93,6 +103,30 @@ class TicketPrice{
           item.type_price = member["type_price"];
           result.add(item);
         });
+      }
+    }).catchError((error){
+
+    });
+    return result;
+  }
+
+  static Future<List<TicketPrice>> GetPriceRoom(String sessionId) async {
+    List<TicketPrice> result = new List<TicketPrice>();
+    var data = await http.post(
+        "https://123phim.vn/apitomapp",
+        headers: {"Content-Type": "application/json;charset=UTF-8"},
+        body: '{"param":{"url":"/checkout/price","keyCache":"no-cache"},"data":{"list_seat":["A01"],"session_id":"'+sessionId+'"},"method":"POST"}'
+
+    ).then((response){
+      if(response.statusCode == 200){
+        Map<String,dynamic> rs = json.decode(response.body)["result"];
+        if(rs == null)
+          return;
+        TicketPrice item = new TicketPrice();
+        item.is_vip_layout = 0;
+        item.area_id = 2;
+        item.type_price = rs["price_after"];
+        result.add(item);
       }
     }).catchError((error){
 
