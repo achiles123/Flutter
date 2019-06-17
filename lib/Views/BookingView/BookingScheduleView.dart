@@ -37,22 +37,20 @@ class BookingScheduleViewState extends State<BookingScheduleView>{
   ScrollController _scrollController = new ScrollController(initialScrollOffset: 115.0,);
   bool _viewType = true;
   int _selectedDay = 0;
-  int _selectedCinema = 0;
-  int _selectedCinemaAddress = 0;
+  int _selectedCinema = -1;
+  int _selectedCinemaAddress = -1;
   bool _toggle = true;
   String _cinemaKey;
   GlobalKey _keyDateView = new GlobalKey();
   Map<String,List<CinemaSchedule>> _scheduleFiltered = new Map<String,List<CinemaSchedule>>();
   CinemaSchedule _scheduleDetail;
+  DateFormat _format = new DateFormat("yyyy-MM-dd");
 
   @override
   void initState() {
     // TODO: implement initState
     //super.initState();
-    SchedulerBinding.instance.addPostFrameCallback((_) {
-      //RenderBox renderBox =  _keyDateView.currentContext.findRenderObject();
-      //_scrollController.animateTo(110, duration: Duration(milliseconds: 500), curve: Curves.ease);
-    });
+
   }
 
   Widget GetSchedule(){
@@ -71,6 +69,7 @@ class BookingScheduleViewState extends State<BookingScheduleView>{
                     key: GlobalKey(debugLabel: "key"+index.toString()),
                     animationDuration: Duration(milliseconds: 700),
                     expansionCallback: (indexChild,status){
+                      int a = 1;
                       setState(() {
                         if(_selectedCinema == index){
                           _toggle = !_toggle;
@@ -130,8 +129,9 @@ class BookingScheduleViewState extends State<BookingScheduleView>{
                                                   ),
                                                 );
                                               },// Cinema Address
-                                              body: FutureBuilder(
-                                                future: _scheduleDetail.cinemas[indexChild].ticket_price.length == 0?_scheduleDetail.cinemas[indexChild].GetTicketPrice():Future<List<TicketPrice>>(()=>_scheduleDetail.cinemas[indexChild].ticket_price),
+                                              body:  _selectedCinemaAddress != indexChild?Container():FutureBuilder(
+                                                //future: _scheduleDetail.cinemas[indexChild].ticket_price.length == 0?_scheduleDetail.cinemas[indexChild].GetTicketPrice():Future<List<TicketPrice>>(()=>_scheduleDetail.cinemas[indexChild].ticket_price),
+                                                future: _scheduleDetail.cinemas[indexChild].GetTicketPrice(),
                                                 builder: (context,snapshot){
                                                   if(snapshot.connectionState == ConnectionState.waiting && _scheduleDetail.cinemas[indexChild].ticket_price.length == 0){
                                                     if(_selectedCinemaAddress == indexChild)
@@ -178,15 +178,6 @@ class BookingScheduleViewState extends State<BookingScheduleView>{
                                           )
                                         ],
                                       );
-                                      return Container(
-                                        height: 40,
-                                        child: Row(
-                                          children: <Widget>[
-                                            Text(GlobalData.parentCinema[index].shortName,style: TextStyle(color: GlobalData.parentCinema[index].color),),
-                                            Text(" - "+_scheduleDetail.cinemas[indexChild].cinema_name_s2)
-                                          ],
-                                        ),
-                                      );
                                     },
                                   ),
                                 )
@@ -210,9 +201,8 @@ class BookingScheduleViewState extends State<BookingScheduleView>{
 
   @override
   Widget build(BuildContext context) {
-    DateFormat format = new DateFormat("yyyy-MM-dd");
     // TODO: implement build
-    Widget returnWidget = RefreshIndicator(
+    return RefreshIndicator(
         onRefresh: () async{
           setState(() {
             widget._schedule =  new Map<String,List<CinemaSchedule>>();
@@ -228,7 +218,7 @@ class BookingScheduleViewState extends State<BookingScheduleView>{
               },
             ),
             FutureBuilder(
-                future: widget._schedule.length == 0?widget._cinemaSchedule.GetScheduleByGroup(filmId:widget._movie.film_id,startDate:format.format(DateTime.now()),endDate:format.format(DateTime.now().add(Duration(days: 7)))):new Future<Map<String,List<CinemaSchedule>>>(()=>widget._schedule),
+                future: widget._schedule.length == 0?widget._cinemaSchedule.GetScheduleByGroup(filmId:widget._movie.film_id,startDate:_format.format(DateTime.now()),endDate:_format.format(DateTime.now().add(Duration(days: 7)))):new Future<Map<String,List<CinemaSchedule>>>(()=>widget._schedule),
                 //future: TicketPrice.GetBySession("385000863"),
                 builder: (context,snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting && widget._schedule.length == 0)
@@ -385,7 +375,7 @@ class BookingScheduleViewState extends State<BookingScheduleView>{
                             padding: EdgeInsets.all(5),
                             child: Text(Helper.GetFullNameOfDate(DateTime.now().add(Duration(days: _selectedDay))),style: TextStyle(color: Colors.black54),),
                           ),
-                          GetSchedule(),
+                        (snapshot.connectionState == ConnectionState.waiting?Container():GetSchedule()),
 
 
                         ],
@@ -401,6 +391,5 @@ class BookingScheduleViewState extends State<BookingScheduleView>{
 
 
     );
-    return returnWidget;
   }
 }

@@ -45,7 +45,6 @@ class CinemaAddress{
 
   Future<List<TicketPrice>> GetTicketPrice() async {
     List<TicketPrice> ticketPrices = new List<TicketPrice>();
-    Stopwatch sw = new Stopwatch();
     for(var itemVersion in versions.entries){
       String version = "";
       switch(itemVersion.key){
@@ -75,13 +74,9 @@ class CinemaAddress{
         if(parent_cinema == "16"){
           prices  = await TicketPrice.GetPriceRoom(sessionId);
         }else{
-          sw.start();
           prices = await TicketPrice.GetPrice(sessionId,session_code,cinemaName,cinema_code);
-          sw.stop();
-          int a = 1;
         }
-
-        prices.forEach((price){
+        for(TicketPrice price in prices){
           price.session_id = sessionId;
           price.session_link = sessionLink;
           price.session_status = sessionStatus;
@@ -92,10 +87,9 @@ class CinemaAddress{
             price.room_title = sessionData["room_name"];
           }
           ticketPrices.add(price);
-        });
+        }
       }
     }
-
     ticket_price = ticketPrices;
     return ticketPrices;
   }
