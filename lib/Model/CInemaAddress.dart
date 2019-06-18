@@ -19,6 +19,7 @@ class CinemaAddress{
   String cinema_code;
   String session_code;
   String session_id;
+  bool _locking = false;
   List<TicketPrice> ticket_price;
   Map<String,dynamic> versions;
 
@@ -43,7 +44,14 @@ class CinemaAddress{
     );
   }
 
-  Future<List<TicketPrice>> GetTicketPrice() async {
+  Future<List<TicketPrice>> GetTicketPrice({bool lock = false}) async {
+    if(_locking == true)
+      return ticket_price;
+    if(lock == true){
+      _locking = true;
+      if(ticket_price.length != 0)
+        return ticket_price;
+    }
     List<TicketPrice> ticketPrices = new List<TicketPrice>();
     for(var itemVersion in versions.entries){
       String version = "";
@@ -55,6 +63,8 @@ class CinemaAddress{
       for(dynamic itemSession in sessions){
         Map<String,dynamic> session = itemSession;
         String sessionId = session["session_id"];
+        if(sessionId == "385033598")
+          int a = 1;
         String sessionLink = session["session_link"];
         String sessionStatus = session["session_status"];
         String sessionTime = session["session_time"];
@@ -91,6 +101,9 @@ class CinemaAddress{
       }
     }
     ticket_price = ticketPrices;
+    if(lock == true){
+      _locking = false;
+    }
     return ticketPrices;
   }
 

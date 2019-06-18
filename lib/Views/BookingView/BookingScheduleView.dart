@@ -53,7 +53,7 @@ class BookingScheduleViewState extends State<BookingScheduleView>{
 
   }
 
-  Widget GetSchedule(){
+  Widget GetSchedule({ConnectionState status}){
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
@@ -78,7 +78,10 @@ class BookingScheduleViewState extends State<BookingScheduleView>{
                         }
                         _selectedCinema = index;
                         _cinemaKey = _scheduleFiltered.keys.elementAt(index);
-                        _scheduleDetail = _scheduleFiltered[_cinemaKey].first;
+                        if(_scheduleFiltered[_cinemaKey].length != 0){
+                          _scheduleDetail = _scheduleFiltered[_cinemaKey].first;
+                        }
+                        _selectedCinemaAddress = -1;
 
                         RenderBox renderBox = mContext.findRenderObject();
                         _scrollController.animateTo(renderBox.localToGlobal(Offset.zero).dy, duration: Duration(microseconds: 1), curve: Curves.ease);
@@ -129,9 +132,9 @@ class BookingScheduleViewState extends State<BookingScheduleView>{
                                                   ),
                                                 );
                                               },// Cinema Address
-                                              body:  _selectedCinemaAddress != indexChild?Container():FutureBuilder(
-                                                //future: _scheduleDetail.cinemas[indexChild].ticket_price.length == 0?_scheduleDetail.cinemas[indexChild].GetTicketPrice():Future<List<TicketPrice>>(()=>_scheduleDetail.cinemas[indexChild].ticket_price),
-                                                future: _scheduleDetail.cinemas[indexChild].GetTicketPrice(),
+                                              body:  _selectedCinema != index?Container():FutureBuilder(
+                                                future: _scheduleDetail.cinemas[indexChild].ticket_price.length == 0 && status != ConnectionState.waiting?_scheduleDetail.cinemas[indexChild].GetTicketPrice(lock: true):Future<List<TicketPrice>>(()=>_scheduleDetail.cinemas[indexChild].ticket_price),
+                                                //future: _scheduleDetail.cinemas[indexChild].GetTicketPrice(),
                                                 builder: (context,snapshot){
                                                   if(snapshot.connectionState == ConnectionState.waiting && _scheduleDetail.cinemas[indexChild].ticket_price.length == 0){
                                                     if(_selectedCinemaAddress == indexChild)
@@ -140,7 +143,11 @@ class BookingScheduleViewState extends State<BookingScheduleView>{
                                                       return Container();
                                                   }else{
                                                     if(_scheduleDetail.cinemas[indexChild].ticket_price.length != 0){
-                                                      List<TicketPrice> filteredPrice = _scheduleDetail.cinemas[indexChild].ticket_price.where((x)=> x.area_id == 2).toList();
+                                                      List<String> byDate =  _scheduleDetail.cinemas[indexChild].ticket_price.map((f)=> f.session_time).toSet().toList();
+                                                      List<TicketPrice> filteredPrice = new List<TicketPrice>();
+                                                      for(String date in byDate){
+                                                        filteredPrice.add(_scheduleDetail.cinemas[indexChild].ticket_price.where((x)=> x.session_time == date).first);
+                                                      }
                                                       DateFormat formatDate = new DateFormat("yyyy-MM-dd HH:mm:ss");
                                                       DateFormat formatTime = new DateFormat("HH:mm");
                                                       return ListView.builder(
@@ -150,17 +157,28 @@ class BookingScheduleViewState extends State<BookingScheduleView>{
                                                         itemBuilder: (context,indexTicket){
                                                           return Container(
                                                             padding:EdgeInsets.all(7),
-                                                            child: Row(
-                                                              children: <Widget>[
-                                                                Text(formatTime.format(formatDate.parse(filteredPrice[indexTicket].session_time)),style: TextStyle(fontSize: 18,fontWeight: FontWeight.w400),),
-                                                                Text(" ~ ",style: TextStyle(color: Colors.black38),),
-                                                                Text(formatTime.format(formatDate.parse(filteredPrice[indexTicket].session_time).add(Duration(minutes:widget._movie.film_information.film_duration))),style: TextStyle(color: Colors.black38),),
-                                                                Spacer(),
-                                                                Text(filteredPrice[indexTicket].version+" - Phụ đề",style: TextStyle(color: Colors.black38),),
-                                                                Spacer(),
-                                                                Text("~"+(filteredPrice[indexTicket].type_price~/1000).toString()+"k",style: TextStyle(color: Colors.black38),),
-                                                              ],
-                                                            ),
+                                                            child: InkWell(
+                                                              onTap: (){
+                                                                Navigator.pushNamed(context, "/booking/choose_price",arguments: {
+                                                                  "movie": widget._movie,
+                                                                  "cinema": GlobalData.parentCinema[index],
+                                                                  "address": _scheduleDetail.cinemas[indexChild],
+                                                                  "tickets": _scheduleDetail.cinemas[indexChild].ticket_price
+
+                                                                });
+                                                              },
+                                                              child: Row(
+                                                                children: <Widget>[
+                                                                  Text(formatTime.format(formatDate.parse(filteredPrice[indexTicket].session_time)),style: TextStyle(fontSize: 18,fontWeight: FontWeight.w400),),
+                                                                  Text(" ~ ",style: TextStyle(color: Colors.black38),),
+                                                                  Text(formatTime.format(formatDate.parse(filteredPrice[indexTicket].session_time).add(Duration(minutes:widget._movie.film_information.film_duration))),style: TextStyle(color: Colors.black38),),
+                                                                  Spacer(),
+                                                                  Text(filteredPrice[indexTicket].version+" - Phụ đề",style: TextStyle(color: Colors.black38),),
+                                                                  Spacer(),
+                                                                  Text("~"+(filteredPrice[indexTicket].type_price~/1000).toString()+"k",style: TextStyle(color: Colors.black38),),
+                                                                ],
+                                                              ),
+                                                            )
                                                           );// Cinema Ticket Price
                                                         },
                                                       );
@@ -236,7 +254,9 @@ class BookingScheduleViewState extends State<BookingScheduleView>{
                       });
                     }
                     _cinemaKey = _scheduleFiltered.keys.elementAt(0);
-                    _scheduleDetail = _scheduleDetail == null? _scheduleFiltered[_scheduleFiltered.keys.elementAt(0)].first:_scheduleDetail;
+                    if(_scheduleFiltered[_scheduleFiltered.keys.elementAt(0)].length != 0){
+                      _scheduleDetail = _scheduleFiltered[_scheduleFiltered.keys.elementAt(0)].first;
+                    }
                     return Container(
                       color: Colors.white,
                       height: double.infinity,
@@ -375,7 +395,7 @@ class BookingScheduleViewState extends State<BookingScheduleView>{
                             padding: EdgeInsets.all(5),
                             child: Text(Helper.GetFullNameOfDate(DateTime.now().add(Duration(days: _selectedDay))),style: TextStyle(color: Colors.black54),),
                           ),
-                        (snapshot.connectionState == ConnectionState.waiting?Container():GetSchedule()),
+                          GetSchedule(status: snapshot.connectionState),
 
 
                         ],
