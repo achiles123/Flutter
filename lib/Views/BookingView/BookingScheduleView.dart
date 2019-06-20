@@ -163,7 +163,7 @@ class BookingScheduleViewState extends State<BookingScheduleView>{
                                                                   "movie": widget._movie,
                                                                   "cinema": GlobalData.parentCinema[index],
                                                                   "address": _scheduleDetail.cinemas[indexChild],
-                                                                  "tickets": _scheduleDetail.cinemas[indexChild].ticket_price
+                                                                  "tickets": _scheduleDetail.cinemas[indexChild].ticket_price.where((f)=> f.session_time == filteredPrice[indexTicket].session_time).toList()
 
                                                                 });
                                                               },
