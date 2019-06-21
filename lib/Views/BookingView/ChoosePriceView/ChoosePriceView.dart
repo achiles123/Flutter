@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/Model/Cinema.dart';
 import 'package:flutter_app/Model/CinemaAddress.dart';
+import 'package:flutter_app/Model/Combo.dart';
 import 'package:flutter_app/Model/Movie.dart';
 import 'package:flutter_app/Model/TicketPrice.dart';
 import 'package:intl/intl.dart';
@@ -26,7 +27,9 @@ class ChoosePriceView extends StatefulWidget{
 }
 
 class ChoosePriceState extends State<ChoosePriceView>{
-  Map<String,int> chooseResult;
+  Map<String,int> chooseTicket;
+  Map<String,int> chooseCombo = new Map<String,int>();
+  List<Combo> _combo;
   int amount  = 0;
 
 
@@ -44,9 +47,9 @@ class ChoosePriceState extends State<ChoosePriceView>{
       widget._cinema = args["cinema"];
       widget._cinemaAddress = args["address"];
       widget._tickets = args["tickets"];
-      chooseResult = new Map<String,int>();
+      chooseTicket = new Map<String,int>();
       for(TicketPrice ticket in widget._tickets){
-        chooseResult.addAll({ticket.type_code:0});
+        chooseTicket.addAll({ticket.type_code:0});
       }
     }
 
@@ -72,8 +75,8 @@ class ChoosePriceState extends State<ChoosePriceView>{
             ],
           ),
         ),
-        body: LayoutBuilder(
-          builder: (bodyContext,constrain){
+        body: Builder(
+          builder: (bodyContext){
             return Container(
               height: double.infinity,
               color: Colors.white,
@@ -82,7 +85,7 @@ class ChoosePriceState extends State<ChoosePriceView>{
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: <Widget>[
                   Container(
-                    height: MediaQuery.of(bodyContext).size.height - 148,
+                    height: MediaQuery.of(bodyContext).size.height - 140,
                     margin: EdgeInsets.only(top: 10),
                     padding: EdgeInsets.only(left: 7,right: 7),
                     child: ListView(
@@ -148,7 +151,9 @@ class ChoosePriceState extends State<ChoosePriceView>{
                         ),
                         Divider(),
                         Container(
-                          child: Text("Chọn loại vé và số lượng"),
+                          height: 30,
+                          alignment: Alignment.centerLeft,
+                          child: Text("Chọn loại vé và số lượng",),
                         ),
                         Divider(),
                         Column(
@@ -177,12 +182,16 @@ class ChoosePriceState extends State<ChoosePriceView>{
                                                   Row(
                                                     mainAxisAlignment: MainAxisAlignment.start,
                                                     children: <Widget>[
-                                                      InkWell(
+                                                      Tooltip(
+                                                        message: widget._tickets[realIndex].type_long_desc,
+                                                        height: 24,
+                                                        verticalOffset: 10,
                                                         child: Container(
-                                                          margin: EdgeInsets.only(right: 5),
-                                                          child: Icon(Icons.info_outline,size: 15,color: Colors.black38,),
+                                                            margin: EdgeInsets.only(right: 5),
+                                                            child:Icon(Icons.info_outline,size: 15,color: Colors.black38,),
                                                         ),
                                                       ),
+
                                                       Text(widget._tickets[realIndex].type_description),
                                                     ],
                                                   ),
@@ -191,8 +200,12 @@ class ChoosePriceState extends State<ChoosePriceView>{
                                                     child: Row(
                                                       mainAxisAlignment: MainAxisAlignment.start,
                                                       children: <Widget>[
-                                                        Text(widget._tickets[realIndex].type_price.toString()),
-                                                        Text("đ",style: TextStyle(color: Colors.grey),),
+                                                        Text(NumberFormat("#,##0","en_US").format(widget._tickets[realIndex].type_price).replaceAll(",", "."),style: TextStyle(fontSize: 16),),
+                                                        Container(
+                                                          margin: EdgeInsets.only(left: 5),
+                                                          child: Text("đ",style: TextStyle(color: Colors.grey),),
+                                                        ),
+
                                                       ],
                                                     ),
                                                   ),
@@ -204,12 +217,17 @@ class ChoosePriceState extends State<ChoosePriceView>{
 
                                         Container(
                                           width: 30,
+                                          foregroundDecoration: BoxDecoration(
+                                            color: Colors.white.withOpacity(chooseTicket[ticketType] == 0?1:0)
+                                          ),
                                           child: InkWell(
                                             onTap: (){
                                               setState(() {
-                                                chooseResult[ticketType] -= 1;
-                                                if(chooseResult[ticketType] < 0)
-                                                  chooseResult[ticketType] = 0;
+                                                chooseTicket[ticketType] -= 1;
+                                                if(chooseTicket[ticketType] < 0)
+                                                  chooseTicket[ticketType] = 0;
+                                                else
+                                                  amount -= widget._tickets[realIndex].type_price;
                                               });
 
                                             },
@@ -218,14 +236,15 @@ class ChoosePriceState extends State<ChoosePriceView>{
                                         ),
                                         Container(
                                           width: 25,
-                                          child: Text(chooseResult[ticketType].toString(),style: TextStyle(fontSize: 18,),textAlign: TextAlign.center,),
+                                          child:  Text(chooseTicket[ticketType].toString(),style: TextStyle(fontSize: 18,fontWeight: FontWeight.bold),textAlign: TextAlign.center,),
                                         ),
                                         Container(
                                           width: 30,
                                           child: InkWell(
                                             onTap: (){
                                               setState(() {
-                                                chooseResult[ticketType] += 1;
+                                                chooseTicket[ticketType] += 1;
+                                                amount += widget._tickets[realIndex].type_price;
                                               });
                                             },
                                             child:Icon(Icons.add,color: Colors.red),
@@ -238,23 +257,168 @@ class ChoosePriceState extends State<ChoosePriceView>{
                               ),
                             )
                           ],
+                        ),// Ticket list
+                        Divider(),
+                        Container(
+                          height: 30,
+                          alignment: Alignment.centerLeft,
+                          child: Text("COMBO"),
                         ),
+                        Divider(),
+                        Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: <Widget>[
+                            Flexible(
+                              child: FutureBuilder(
+                                future: _combo == null?Combo.GetByCinema(widget._cinema.fetchName,widget._tickets[0].cinema_id):Future(()=>_combo),
+                                builder: (context,snapshot){
+                                  if(snapshot.connectionState == ConnectionState.waiting && _combo == null)
+                                    return CircularProgressIndicator();
+                                  else{
+                                    if(snapshot.data != null)
+                                      _combo = snapshot.data;
+                                    if(_combo != null){
+                                      chooseCombo.addAll(Map.fromIterable(_combo.map((f)=> {f.item_id:0})));
+                                      return ListView.builder(
+                                        shrinkWrap: true,
+                                        physics: NeverScrollableScrollPhysics(),
+                                        itemCount: _combo.length+_combo.length-1,
+                                        itemBuilder: (context,index){
+                                          if(index.isOdd)
+                                            return Divider();
+                                          int realIndex = index ~/2;
+                                          String comboId = _combo[index].item_id;
+                                          return Container(
+                                            child: Row(
+                                              children: <Widget>[
+                                                Container(
+                                                  height: 30,
+                                                  width: 25,
+                                                  decoration: BoxDecoration(
+                                                    image: DecorationImage(image: NetworkImage(_combo[index].item_img_thumb))
+                                                  ),
+                                                ),
+                                                Container(
+                                                  width: 30,
+                                                  foregroundDecoration: BoxDecoration(
+                                                      color: Colors.white.withOpacity(chooseCombo[comboId] == 0?1:0)
+                                                  ),
+                                                  child: InkWell(
+                                                    onTap: (){
+                                                      setState(() {
+                                                        chooseCombo[comboId] -= 1;
+                                                        if(chooseCombo[comboId] < 0)
+                                                          chooseCombo[comboId] = 0;
+                                                        else
+                                                          amount -= int.parse(_combo[realIndex].item_price);
+                                                      });
 
+                                                    },
+                                                    child:Icon(FontAwesomeIcons.minus,color: Colors.red,size: 14,),
+                                                  ),
+                                                ),
+                                                Container(
+                                                  width: 25,
+                                                  child:  Text(chooseCombo[comboId].toString(),style: TextStyle(fontSize: 18,fontWeight: FontWeight.bold),textAlign: TextAlign.center,),
+                                                ),
+                                                Container(
+                                                  width: 30,
+                                                  child: InkWell(
+                                                    onTap: (){
+                                                      setState(() {
+                                                        chooseCombo[comboId] += 1;
+                                                        amount += int.parse(_combo[realIndex].item_price);
+                                                      });
+                                                    },
+                                                    child:Icon(Icons.add,color: Colors.red),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          );
+                                        },
+                                      );
+                                    }else{
+                                      return CircularProgressIndicator();
+                                    }
+                                  }
+                                },
+                              ),
+                            ),
+                          ],
+                        ),// Combo
 
                       ],
                     ),
                   ), // Body
                   Card(
                     elevation: 0.5,
-                    shape: OutlineInputBorder(borderRadius: BorderRadius.circular(0)),
+                    shape: OutlineInputBorder(borderRadius: BorderRadius.circular(0),borderSide: BorderSide(color: Colors.black26),gapPadding: 0),
                     margin: EdgeInsets.all(0),
-                    borderOnForeground: true,
+
+                    //borderOnForeground: true,
 
                     child: Container(
                       height: 50,
                       child: Row(
                         children: <Widget>[
-                          Text(NumberFormat("#,##0","en_US").format(amount)),
+                          Container(
+                            width: MediaQuery.of(context).size.width*0.5,
+                            margin: EdgeInsets.only(left: 7),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: <Widget>[
+                                Container(
+                                  child: Stack(
+                                    children: <Widget>[
+                                      Container(
+                                        margin: EdgeInsets.only(top: 5,right: 5),
+                                        child: Icon(Icons.event_note,size: 26,color: Colors.grey,),
+                                      ),
+
+                                      Positioned(
+                                        top: 0,
+                                        right: 0,
+                                        child: Container(
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            color: Colors.red,
+                                          ),
+                                          padding: EdgeInsets.all(3),
+                                          child: Text(
+                                            (chooseTicket.values.toList().reduce((x,y)=> x+y )+chooseCombo.length == 0?0:chooseCombo.values.toList().reduce((x,y)=>x+y)).toString(),
+                                            style: TextStyle(color: Colors.white,fontSize: 8),),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Container(
+                                  margin: EdgeInsets.only(left: 3),
+                                  child: Text(NumberFormat("#,##0","en_US").format(amount).replaceAll(",", "."),style: TextStyle(color: Color(0xff267326),fontSize: 18),),
+                                ),
+                                Container(
+                                  margin: EdgeInsets.only(left: 3),
+                                  child: Text("đ",style: TextStyle(color: Colors.grey),),
+                                )
+                              ],
+                            ),
+                          ),
+                          Flexible(
+                            child: InkWell(
+                              child: Container(
+                                height: 100,
+                                color: Color(chooseTicket.values.toList().reduce((x,y)=> x+y ) == 0?0xffb3b3b3:0xff267326),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: <Widget>[
+                                    Text("TIẾP TỤC",style: TextStyle(color: Colors.white,fontSize: 18),),
+                                    Icon(Icons.arrow_forward,color: Colors.white,size: 22,)
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
                         ],
                       ),
                     ),

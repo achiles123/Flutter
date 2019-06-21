@@ -254,7 +254,7 @@ class BookingScheduleViewState extends State<BookingScheduleView>{
                       });
                     }
                     _cinemaKey = _scheduleFiltered.keys.elementAt(0);
-                    if(_scheduleFiltered[_scheduleFiltered.keys.elementAt(0)].length != 0){
+                    if(_scheduleDetail == null){
                       _scheduleDetail = _scheduleFiltered[_scheduleFiltered.keys.elementAt(0)].first;
                     }
                     return Container(
