@@ -8,6 +8,7 @@ import 'Login/Login.dart';
 import 'Register/Register.dart';
 import 'SplashScreen/WelcomeSplash.dart';
 import 'Views/BookingView/ChoosePriceView/ChoosePriceView.dart';
+import 'Views/BookingView/ChoosePriceView/RoomMapView.dart';
 import 'Views/StarView/BookingView.dart';
 import 'package:geolocator/geolocator.dart';
 
@@ -42,6 +43,7 @@ class CompareApp extends StatelessWidget {
         "/home":(context) => new Home(),
         "/booking":(context) => new BookingView(),
         "/booking/choose_price":(context) => new ChoosePriceView(),
+        "/booking/room_map":(context) => new RoomMapView(),
       },
     );
   }

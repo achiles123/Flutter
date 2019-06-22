@@ -187,7 +187,7 @@ class ChoosePriceState extends State<ChoosePriceView>{
                                                         height: 24,
                                                         verticalOffset: 10,
                                                         child: Container(
-                                                            margin: EdgeInsets.only(right: 5),
+                                                            margin: EdgeInsets.only(right: 3),
                                                             child:Icon(Icons.info_outline,size: 15,color: Colors.black38,),
                                                         ),
                                                       ),
@@ -231,7 +231,7 @@ class ChoosePriceState extends State<ChoosePriceView>{
                                               });
 
                                             },
-                                            child:Icon(FontAwesomeIcons.minus,color: Colors.red,size: 14,),
+                                            child:Icon(Icons.remove,color: Colors.red,),
                                           ),
                                         ),
                                         Container(
@@ -278,7 +278,8 @@ class ChoosePriceState extends State<ChoosePriceView>{
                                     if(snapshot.data != null)
                                       _combo = snapshot.data;
                                     if(_combo != null){
-                                      chooseCombo.addAll(Map.fromIterable(_combo.map((f)=> {f.item_id:0})));
+                                      if(chooseCombo.length == 0)
+                                        chooseCombo.addAll(Map.fromIterable(_combo,key: (item)=>(item as Combo).item_id,value:(item)=> 0));
                                       return ListView.builder(
                                         shrinkWrap: true,
                                         physics: NeverScrollableScrollPhysics(),
@@ -287,16 +288,54 @@ class ChoosePriceState extends State<ChoosePriceView>{
                                           if(index.isOdd)
                                             return Divider();
                                           int realIndex = index ~/2;
-                                          String comboId = _combo[index].item_id;
+                                          String comboId = _combo[realIndex].item_id;
                                           return Container(
                                             child: Row(
                                               children: <Widget>[
                                                 Container(
-                                                  height: 30,
-                                                  width: 25,
+                                                  height: 50,
+                                                  width: 45,
                                                   decoration: BoxDecoration(
-                                                    image: DecorationImage(image: NetworkImage(_combo[index].item_img_thumb))
+                                                    image: DecorationImage(image: NetworkImage(_combo[realIndex].item_img_thumb))
                                                   ),
+                                                ),
+                                                Flexible(
+                                                  child: Container(
+                                                    margin: EdgeInsets.only(left: 3),
+                                                    child: Column(
+                                                      mainAxisSize: MainAxisSize.min,
+                                                      mainAxisAlignment: MainAxisAlignment.start,
+                                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                                      children: <Widget>[
+                                                        Row(
+                                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                                          mainAxisAlignment: MainAxisAlignment.start,
+                                                          children: <Widget>[
+                                                            Tooltip(
+                                                              message: _combo[realIndex].item_desc,
+                                                              height: 24,
+                                                              verticalOffset: 10,
+                                                              child: Container(
+                                                                margin: EdgeInsets.only(right: 3),
+                                                                child:Icon(Icons.info_outline,size: 15,color: Colors.black38,),
+                                                              ),
+                                                            ),
+
+                                                            Text(_combo[realIndex].item_name),
+                                                          ],
+                                                        ),
+                                                        Row(
+                                                          children: <Widget>[
+                                                            Text(NumberFormat("#,##0","en_US").format(int.parse(_combo[realIndex].item_price)).replaceAll(",", "."),style: TextStyle(fontSize: 16),),
+                                                            Container(
+                                                              margin: EdgeInsets.only(left: 5),
+                                                              child: Text("đ",style: TextStyle(color: Colors.grey),),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  )
                                                 ),
                                                 Container(
                                                   width: 30,
@@ -314,7 +353,7 @@ class ChoosePriceState extends State<ChoosePriceView>{
                                                       });
 
                                                     },
-                                                    child:Icon(FontAwesomeIcons.minus,color: Colors.red,size: 14,),
+                                                    child:Icon(Icons.remove,color: Colors.red,),
                                                   ),
                                                 ),
                                                 Container(
@@ -386,7 +425,7 @@ class ChoosePriceState extends State<ChoosePriceView>{
                                           ),
                                           padding: EdgeInsets.all(3),
                                           child: Text(
-                                            (chooseTicket.values.toList().reduce((x,y)=> x+y )+chooseCombo.length == 0?0:chooseCombo.values.toList().reduce((x,y)=>x+y)).toString(),
+                                            (chooseTicket.values.toList().reduce((x,y)=> x+y )+(chooseCombo.length == 0?0:chooseCombo.values.toList().reduce((x,y)=>x+y))).toString(),
                                             style: TextStyle(color: Colors.white,fontSize: 8),),
                                         ),
                                       ),
@@ -406,6 +445,9 @@ class ChoosePriceState extends State<ChoosePriceView>{
                           ),
                           Flexible(
                             child: InkWell(
+                              onTap: (){
+                                Navigator.of(context).popAndPushNamed("/booking/room_map");
+                              },
                               child: Container(
                                 height: 100,
                                 color: Color(chooseTicket.values.toList().reduce((x,y)=> x+y ) == 0?0xffb3b3b3:0xff267326),

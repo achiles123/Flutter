@@ -141,3 +141,21 @@ class LocationPopupState extends State<LocationPopup>{
     );
   }
 }
+
+class TooltipPopup extends StatefulWidget{
+
+
+  @override
+  State<StatefulWidget> createState() {
+    // TODO: implement createState
+    return new TooltipPopupState();
+  }
+}
+
+class TooltipPopupState extends State<TooltipPopup>{
+  @override
+  Widget build(BuildContext context) {
+    // TODO: implement build
+    return null;
+  }
+}
