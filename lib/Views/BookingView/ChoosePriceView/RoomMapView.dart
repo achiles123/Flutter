@@ -27,6 +27,10 @@ class RoomMapViewState extends State<RoomMapView>{
   Map<TicketPrice,int> _tickets;
   CinemaAddress _cinemaAddress;
   Map<String,ChooseSeat> chooseSeats;
+  DateTime ticketDate;
+  String headerText;
+  List<Map<String,dynamic>> queryTicket;
+  String dateName;
 
   Widget DrawSeat(int rowIndex,int columnIndex,double seatWidth){
     Color seatColor = Color(0xffcecece);
@@ -76,35 +80,51 @@ class RoomMapViewState extends State<RoomMapView>{
       checkChosen = true;
       seatColor = Colors.green;
       String seatCode = seatCodeRow[columnIndex];
-      int numberSeatCode = int.parse(seatCode.substring(0,1));
+      int numberSeatCode = int.parse(seatCode.substring(1));
       statusWidget = Text(numberSeatCode.toString(),textAlign: TextAlign.center,);
     }
 
-    return InkWell(
-        onTap: (){
-          int areaId = _roomMap.area_id[rowIndex][columnIndex];
-          ChooseSeat chooseSeat = chooseSeats.values.firstWhere((f)=>f.area_id == areaId);
-          if(chooseSeat == null)
-            return;
-          int currentPoint = chooseSeat.current_point;
-          setState(() {
-            chooseSeats[chooseSeat.id].poins[currentPoint] = new Point(rowIndex,columnIndex);
-            currentPoint += 1;
-            chooseSeats[chooseSeat.id].current_point += currentPoint%chooseSeat.poins.length;
-          });
+    return Builder(
+      builder: (context){
+        return InkWell(
+            onTap: (){
+              int areaId = _roomMap.area_id[rowIndex][columnIndex];
+              ChooseSeat chooseSeat = chooseSeats.values.firstWhere((f)=>f.area_id == areaId,orElse: ()=> null);
+              if(chooseSeat == null)
+                return;
+              int currentPoint = chooseSeat.current_point;
+              setState(() {
+                if(chooseSeat.poins.values.where((f)=>f.x == rowIndex && f.y == columnIndex).length != 0){
+                  Scaffold.of(context).hideCurrentSnackBar(reason: SnackBarClosedReason.remove);
+                  Scaffold.of(context).showSnackBar(SnackBar(
+                    duration: Duration(seconds: 2),
+                    content: Text("abc"),
+                  ));
+                  return;
+                }
+                if(statusRow[columnIndex] != 0)
+                  return;
+                chooseSeats[chooseSeat.id].poins[currentPoint] = new Point(rowIndex,columnIndex);
+                currentPoint += 1;
+                chooseSeats[chooseSeat.id].current_point = currentPoint%chooseSeat.poins.length;
+              });
 
-        },
-        child: Container(
-          width: seatWidth,
-          height: seatWidth,
-          margin: EdgeInsets.all(0.5),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(3),
-            color: seatColor,
-          ),
-          child: statusWidget,
-        )
+            },
+            child: Container(
+              width: seatWidth,
+              height: seatWidth,
+              margin: EdgeInsets.all(0.5),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(3),
+                color: seatColor,
+              ),
+              child: statusWidget,
+            )
+        );
+      },
     );
+
+
   }
 
   Widget SeatNote(){
@@ -290,12 +310,8 @@ class RoomMapViewState extends State<RoomMapView>{
   @override
   Widget build(BuildContext context) {
     // TODO: implement build
-    String dateName;
     DateFormat formatDate = new DateFormat("yyyy-MM-dd");
     DateFormat formatTime = new DateFormat("HH:mm");
-    DateTime ticketDate = DateFormat("yyyy-MM-dd HH:mm").parse(_tickets.keys.first.session_time);
-    String headerText;
-    List<Map<String,dynamic>> queryTicket;
     if(_cinema == null){
       Map<String,dynamic> args = ModalRoute.of(context).settings.arguments;
       _cinema = args["cinema"];
@@ -317,7 +333,7 @@ class RoomMapViewState extends State<RoomMapView>{
           "type_area":item.key.area_id
         });
       }
-
+      ticketDate = DateFormat("yyyy-MM-dd HH:mm").parse(_tickets.keys.first.session_time);
       dateName = DateFormat("dd/MM").format(ticketDate);
       if(formatDate.format(ticketDate) == formatDate.format(DateTime.now()))
         dateName = "Hôm nay";
@@ -491,7 +507,7 @@ class ChooseSeat{
     current_point = 0;
     poins = new Map<int,Point>();
     for(int i=0;i<quantity;i++){
-       poins.addAll({0:Point(-1,-1)});
+       poins.addAll({i:Point(-1,-1)});
     }
   }
 }
