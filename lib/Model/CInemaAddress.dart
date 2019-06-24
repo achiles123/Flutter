@@ -55,8 +55,10 @@ class CinemaAddress{
     List<TicketPrice> ticketPrices = new List<TicketPrice>();
     for(var itemVersion in versions.entries){
       String version = "";
+      String typeVersion = "";
       switch(itemVersion.key){
         case "2_0":version = "2D";break;
+        case "2_1":version = "2D";break;
         default:version = "2D";
       }
       List<dynamic>  sessions = itemVersion.value;

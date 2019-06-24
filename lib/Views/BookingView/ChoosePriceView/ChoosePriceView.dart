@@ -52,7 +52,14 @@ class ChoosePriceState extends State<ChoosePriceView>{
         chooseTicket.addAll({ticket.type_code:0});
       }
     }
-
+    DateFormat formatDate = new DateFormat("yyyy-MM-dd");
+    DateFormat formatTime = new DateFormat("HH:mm");
+    DateTime ticketDate = DateFormat("yyyy-MM-dd HH:mm").parse(widget._tickets.first.session_time);
+    String dateName = DateFormat("dd/MM").format(ticketDate);
+    if(formatDate.format(ticketDate) == formatDate.format(DateTime.now()))
+      dateName = "Hôm nay";
+    if(formatDate.format(ticketDate) == formatDate.format(DateTime.now().add(Duration(days: 1))))
+      dateName = "Ngày mai";
     // TODO: implement build
     return Scaffold(
         appBar: AppBar(
@@ -71,7 +78,11 @@ class ChoosePriceState extends State<ChoosePriceView>{
                   Text(" - "+widget._cinemaAddress.cinema_name_s2),
                 ],
               ),
-
+              Row(
+                children: <Widget>[
+                  Text(dateName+"-"+formatTime.format(ticketDate)+"-"+widget._tickets.first.room_title,style: TextStyle(fontSize: 14),),
+                ],
+              ),
             ],
           ),
         ),
@@ -446,7 +457,25 @@ class ChoosePriceState extends State<ChoosePriceView>{
                           Flexible(
                             child: InkWell(
                               onTap: (){
-                                Navigator.of(context).popAndPushNamed("/booking/room_map");
+                                Map<TicketPrice,int> sendTicket = new Map<TicketPrice,int>();
+                                for(MapEntry<String,int> item in chooseTicket.entries){
+                                  if(item.value != 0){
+                                    sendTicket.addAll({widget._tickets.firstWhere((f)=>f.type_code==item.key):item.value});
+                                  }
+                                }
+                                Map<Combo,int> sendCombo = new Map<Combo,int>();
+                                for(MapEntry<String,int> item in chooseCombo.entries){
+                                  if(item.value != 0){
+                                    sendCombo.addAll({_combo.firstWhere((f)=>f.item_id==item.key):item.value});
+                                  }
+                                }
+                                Navigator.of(context).popAndPushNamed("/booking/room_map",arguments: {
+                                  "movie":widget._movie,
+                                  "chooseTicket" : sendTicket,
+                                  "chooseCombo" : sendCombo,
+                                  "cinema" : widget._cinema,
+                                  "address": widget._cinemaAddress,
+                                });
                               },
                               child: Container(
                                 height: 100,

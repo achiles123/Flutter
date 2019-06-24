@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
+import 'package:meta/meta.dart';
 
 class RoomMap{
   final List<dynamic> area_id;
@@ -41,12 +42,13 @@ class RoomMap{
     );
   }
 
-  static Future<RoomMap> GetMap() async {
+  static Future<RoomMap> GetMap(String fetchName,String sessionId,List<Map<String,dynamic>> queryTicket) async {
     RoomMap result = null;
+    String inputTicket = json.encode(queryTicket);
     await http.post(
       "https://123phim.vn/apitomapp",
       headers: {"Content-Type": "application/json;charset=UTF-8"},
-      body:'{"param":{"url":"/checkout/galaxy/ticket","keyCache":"no-cache"},"data":{"session_id":"385063283","list_ticket":[{"type_num":2,"type_desc":"Vé người lớn","type_price":85000,"type_area":2,"type_code":"0004","type_max":10}],"user_session_id":"","is_full_data":1},"method":"POST"}'
+      body:'{"param":{"url":"/checkout/$fetchName/ticket","keyCache":"no-cache"},"data":{"session_id":"$sessionId","list_ticket":$inputTicket,"user_session_id":"","is_full_data":1},"method":"POST"}'
     ).then((response){
       if(response.statusCode == 200){
         Map<String,dynamic> rs = json.decode(response.body)["result"]["list_seat"];

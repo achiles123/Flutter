@@ -58,6 +58,7 @@ flutter:
    - assets/image/placeholder.jpg
    - assets/image/zalo.png
    - assets/image/facebook.png
+   - assets/image/exit.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

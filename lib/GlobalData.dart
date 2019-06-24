@@ -69,4 +69,12 @@ class GlobalData{
     new Cinema(id: "17",name: "Mega GS",shortName: "MegaGS",fetchName: "megags",logo: "https://s3img.vcdn.vn/123phim/2018/09/7b078639bd8fdb09dd83652d207c7b90.png",color: Colors.amberAccent),
     new Cinema(id: "1",name: "Lotte Cinema",shortName: "Lotte",logo: "https://s3img.vcdn.vn/123phim/2018/09/404b8c4b80d77732e7426cdb7e24be20.png",color: Colors.red),
   ];
+
+  static final Map<int,Color> seatColor = {
+    0:Color(0xffcecece),
+    3:Colors.black54,
+    1:Colors.orangeAccent,
+    12:Colors.transparent,
+    11:Colors.transparent,
+  };
 }

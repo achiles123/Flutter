@@ -23,6 +23,7 @@ class TicketPrice{
   String type_long_desc_en;
   int type_max;
   String version;
+  String type_version;
   int type_price;
 
 

@@ -158,14 +158,15 @@ class BookingScheduleViewState extends State<BookingScheduleView>{
                                                           return Container(
                                                             padding:EdgeInsets.all(7),
                                                             child: InkWell(
-                                                              onTap: (){
-                                                                Navigator.pushNamed(context, "/booking/choose_price",arguments: {
+                                                              onTap: () async {
+                                                                dynamic returnMessage = await Navigator.pushNamed(context, "/booking/choose_price",arguments: {
                                                                   "movie": widget._movie,
                                                                   "cinema": GlobalData.parentCinema[index],
                                                                   "address": _scheduleDetail.cinemas[indexChild],
                                                                   "tickets": _scheduleDetail.cinemas[indexChild].ticket_price.where((f)=> f.session_time == filteredPrice[indexTicket].session_time).toList()
 
                                                                 });
+                                                                print("message return:$returnMessage");
                                                               },
                                                               child: Row(
                                                                 children: <Widget>[
@@ -413,3 +414,4 @@ class BookingScheduleViewState extends State<BookingScheduleView>{
     );
   }
 }
+
