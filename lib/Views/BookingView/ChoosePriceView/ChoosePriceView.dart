@@ -456,7 +456,7 @@ class ChoosePriceState extends State<ChoosePriceView>{
                           ),
                           Flexible(
                             child: InkWell(
-                              onTap: (){
+                              onTap: () async {
                                 Map<TicketPrice,int> sendTicket = new Map<TicketPrice,int>();
                                 for(MapEntry<String,int> item in chooseTicket.entries){
                                   if(item.value != 0){
@@ -469,13 +469,14 @@ class ChoosePriceState extends State<ChoosePriceView>{
                                     sendCombo.addAll({_combo.firstWhere((f)=>f.item_id==item.key):item.value});
                                   }
                                 }
-                                Navigator.of(context).popAndPushNamed("/booking/room_map",arguments: {
+                                dynamic returnMessage = await Navigator.of(context).pushNamed("/booking/room_map",arguments: {
                                   "movie":widget._movie,
                                   "chooseTicket" : sendTicket,
                                   "chooseCombo" : sendCombo,
                                   "cinema" : widget._cinema,
                                   "address": widget._cinemaAddress,
                                 });
+                                Navigator.of(context).pop(returnMessage);
                               },
                               child: Container(
                                 height: 100,

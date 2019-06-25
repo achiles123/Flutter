@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_app/DrawCanvas/BestSeatCanvas.dart';
 import 'package:flutter_app/Model/Cinema.dart';
 import 'package:flutter_app/Model/CinemaAddress.dart';
 import 'package:flutter_app/Model/Combo.dart';
@@ -31,8 +32,10 @@ class RoomMapViewState extends State<RoomMapView>{
   String headerText;
   List<Map<String,dynamic>> queryTicket;
   String dateName;
+  bool seatError = false;
 
   Widget DrawSeat(int rowIndex,int columnIndex,double seatWidth){
+    double seatHeight = seatWidth;
     Color seatColor = Color(0xffcecece);
     Widget statusWidget;
     List<dynamic> statusRow = _roomMap.status[rowIndex];
@@ -46,12 +49,12 @@ class RoomMapViewState extends State<RoomMapView>{
     seatColor = GlobalData.seatColor[type];
     if(status == 1)
       seatColor = seatColor.withOpacity(0.5);
-    if(status == 2)
+    if(status != 0 && status != 1)
       seatColor = Colors.black54;
     switch(type){
       case 3: statusWidget = Icon(Icons.close,size: seatWidth,color: Colors.white,);break;
     }
-    if(status == 2)
+    if(status != 0)
       statusWidget = Icon(Icons.close,size: seatWidth,color: Colors.white,);
     if(seatId == "0"){
       seatColor = Colors.transparent;
@@ -78,10 +81,58 @@ class RoomMapViewState extends State<RoomMapView>{
     List<ChooseSeat> temp = chooseSeats.values.toList();
     if(temp.any((f)=>f.poins.values.any((f)=> f.x == rowIndex && f.y == columnIndex))){
       checkChosen = true;
-      seatColor = Colors.green;
+      seatColor = Color(0xff44c020);
       String seatCode = seatCodeRow[columnIndex];
       int numberSeatCode = int.parse(seatCode.substring(1));
-      statusWidget = Text(numberSeatCode.toString(),textAlign: TextAlign.center,);
+      statusWidget = Container(
+        alignment: Alignment.center,
+        child: Text(numberSeatCode.toString(),textAlign: TextAlign.center,style: TextStyle(color: Colors.black54),),
+      );
+
+    }
+    String seatLeft = columnIndex - 1 >= 0?seatCodeRow[columnIndex-1]:"";
+    String seatRight = columnIndex + 1 < seatCodeRow.length?seatCodeRow[columnIndex+1]:"";
+    EdgeInsets margin = EdgeInsets.only(
+        bottom: 0.5,
+        top: 0.5,
+        right: seatCodeRow[columnIndex] == "0"?0:(seatRight != seatCodeRow[columnIndex]?0.5:0),
+        left: seatCodeRow[columnIndex] == "0"?0:(seatLeft != seatCodeRow[columnIndex]?0.5:0),
+    );
+
+    BorderRadius borderRadius = BorderRadius.only(
+      topLeft: Radius.circular(seatLeft == seatCodeRow[columnIndex] && seatCodeRow[columnIndex] != "0"?0:3),
+      bottomLeft: Radius.circular(seatLeft == seatCodeRow[columnIndex] && seatCodeRow[columnIndex] != "0"?0:3),
+      topRight: Radius.circular(seatRight == seatCodeRow[columnIndex] && seatCodeRow[columnIndex] != "0"?0:3),
+      bottomRight: Radius.circular(seatRight == seatCodeRow[columnIndex] && seatCodeRow[columnIndex] != "0"?0:3),
+    );
+    if(seatRight == seatCodeRow[columnIndex] && seatCodeRow[columnIndex] != "0"){
+      seatWidth += 0.5;
+    }
+    if(seatLeft == seatCodeRow[columnIndex] && seatCodeRow[columnIndex] != "0"){
+      seatWidth += 0.5;
+    }
+    if(type == 3){
+      List<int> groupIndex = new List<int>();
+      for(int i=0;i<typeRow.length;i++){
+        if(typeRow[i] == 3)
+          groupIndex.add(i);
+      }
+      int indexInGroup = groupIndex.indexOf(columnIndex)+1;
+
+      margin = EdgeInsets.only(
+        bottom: 0.5,
+        top: 0.5,
+        right: indexInGroup % 2 == 0?0.5:0,
+        left: indexInGroup % 2 == 0?0:0.5,
+      );
+
+      borderRadius = BorderRadius.only(
+        topLeft: Radius.circular(indexInGroup % 2 == 0?0:3),
+        bottomLeft: Radius.circular(indexInGroup % 2 == 0?0:3),
+        topRight: Radius.circular(indexInGroup % 2 == 0?3:0),
+        bottomRight: Radius.circular(indexInGroup % 2 == 0?3:0),
+      );
+      seatWidth += 0.5;
     }
 
     return Builder(
@@ -95,27 +146,71 @@ class RoomMapViewState extends State<RoomMapView>{
               int currentPoint = chooseSeat.current_point;
               setState(() {
                 if(chooseSeat.poins.values.where((f)=>f.x == rowIndex && f.y == columnIndex).length != 0){
-                  Scaffold.of(context).hideCurrentSnackBar(reason: SnackBarClosedReason.remove);
-                  Scaffold.of(context).showSnackBar(SnackBar(
-                    duration: Duration(seconds: 2),
-                    content: Text("abc"),
-                  ));
                   return;
                 }
                 if(statusRow[columnIndex] != 0)
                   return;
+                int quantityChosen = chooseSeats[chooseSeat.id].quantity_chosen;
+                if(chooseSeats[chooseSeat.id].poins[currentPoint].x == -1){
+                  quantityChosen += 1;
+                }
+
+                if(quantityChosen >= chooseSeats[chooseSeat.id].quantity){
+                  if(type != 6 && type != 7){
+                    List<Point> pointTemp = chooseSeats[chooseSeat.id].poins.values.toList();
+                    pointTemp[currentPoint] = new Point(rowIndex,columnIndex);
+                    for(Point point in pointTemp){
+                      if(pointTemp.any((p)=>p.x == point.x && (p.y - point.y).abs() == 2)){
+                        Scaffold.of(context).removeCurrentSnackBar(reason: SnackBarClosedReason.dismiss);
+                        Scaffold.of(context).showSnackBar(SnackBar(
+                          duration: Duration(seconds: 2),
+                          content: Text("Không được để trống khoảng cách ở giữa"),
+                        ));
+                        seatError = true;
+                      }
+
+                    }
+                    for(Point point in pointTemp){
+                      List<int> statusRow = List.from(_roomMap.status[point.x]);
+                      int beginIndex = statusRow.indexOf(0);
+                      int lastIndex = statusRow.lastIndexOf(0);
+                      Point existedPoint = pointTemp.firstWhere((f)=> f.x == point.x && (f.y == beginIndex || f.y == lastIndex ),orElse:()=> null);
+                      if(existedPoint != null && point.y - 1 != existedPoint.y && point.y + 1 != existedPoint.y && (point.y - 1 == beginIndex || point.y + 1 == lastIndex)){
+                        Scaffold.of(context).removeCurrentSnackBar(reason: SnackBarClosedReason.dismiss);
+                        Scaffold.of(context).showSnackBar(SnackBar(
+                          duration: Duration(seconds: 2),
+                          content: Text("Không được để trống đầu dãy"),
+                        ));
+                        seatError = true;
+                      }
+                      if(existedPoint == null && (point.y - 1 == beginIndex || point.y + 1 == lastIndex)){
+                        Scaffold.of(context).removeCurrentSnackBar(reason: SnackBarClosedReason.dismiss);
+                        Scaffold.of(context).showSnackBar(SnackBar(
+                          duration: Duration(seconds: 2),
+                          content: Text("Không được để trống đầu dãy"),
+                        ));
+                        seatError = true;
+                      }
+                    }
+                  }
+
+                }
                 chooseSeats[chooseSeat.id].poins[currentPoint] = new Point(rowIndex,columnIndex);
                 currentPoint += 1;
                 chooseSeats[chooseSeat.id].current_point = currentPoint%chooseSeat.poins.length;
+                if(quantityChosen <= chooseSeats[chooseSeat.id].quantity)
+                  chooseSeats[chooseSeat.id].quantity_chosen = quantityChosen;
+                seatError = false;
               });
 
             },
             child: Container(
               width: seatWidth,
-              height: seatWidth,
-              margin: EdgeInsets.all(0.5),
+              height: seatHeight,
+              margin: margin,
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(3),
+                border: Border.all(style: BorderStyle.none,width: 0),
+                borderRadius: borderRadius,
                 color: seatColor,
               ),
               child: statusWidget,
@@ -171,7 +266,7 @@ class RoomMapViewState extends State<RoomMapView>{
                       margin: EdgeInsets.all(0.5),
                       decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(3),
-                          color: Colors.brown
+                          color: Color(0xff8b572a),
                       ),
                     ),
                     Text("Ghế sofa",style: TextStyle(fontSize: 10),),
@@ -259,8 +354,26 @@ class RoomMapViewState extends State<RoomMapView>{
               ],
             ),
             Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
+                Row(
+                  children: <Widget>[
+                    Row(
+                      children: <Widget>[
+                        Container(
+                          width: 10,
+                          height: 10,
+                          margin: EdgeInsets.all(0.5),
+                          decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(3),
+                              color: Color(0xff50e3c2),
+                          ),
+                        ),
+                        Text("Ghế First Class",style: TextStyle(fontSize: 10),),
+                      ],
+                    ),
+                  ],
+                ),
                 Row(
                   children: <Widget>[
                     Row(
@@ -346,7 +459,7 @@ class RoomMapViewState extends State<RoomMapView>{
         elevation: 0,
         leading: InkWell(
           onTap: (){
-            Navigator.of(context).pop();
+            Navigator.of(context).pop("abc");
           },
           child: Icon(Icons.arrow_back,color: Colors.red,),
         ),
@@ -411,77 +524,85 @@ class RoomMapViewState extends State<RoomMapView>{
                 Flexible(
                   child: Container(
                     padding: EdgeInsets.all(5),
-                    child: FutureBuilder(
-                      future: RoomMap.GetMap(_cinema.fetchName,_sessionId,queryTicket),
-                      builder: (context,snapshot){
-                        if(snapshot.connectionState == ConnectionState.waiting && _roomMap == null)
-                          return CircularProgressIndicator();
-                        else{
-                          if(snapshot.data != null)
-                            _roomMap = snapshot.data;
-                          if(_roomMap != null){
-                            List<dynamic> areaIndex = _roomMap.area_index2 != null?_roomMap.area_index2:_roomMap.area_index;
-                            return ListView.builder(
-                              physics: NeverScrollableScrollPhysics(),
-                              shrinkWrap: true,
-                              itemCount: areaIndex.length,
-                              itemBuilder: (rowContext,rowIndex){
-                                List<dynamic> buildRow = areaIndex[rowIndex];
-                                double seatWidth = (MediaQuery.of(rowContext).size.width-buildRow.length*0.5-40)/_roomMap.seat_id[rowIndex].length;
-                                if(buildRow.length == 0)
-                                  return Container(height: seatWidth,);
-                                String titleRow = _roomMap.title[rowIndex];
-                                List<dynamic> statusRow = _roomMap.status[rowIndex];
-                                List<dynamic> typeRow = _roomMap.type[rowIndex];
-                                List<dynamic> seatIdRow = _roomMap.seat_id[rowIndex];
-                                return Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  children: <Widget>[
-                                    Container(
-                                        height: seatWidth+1,
-                                        child: Row(
-                                          children: <Widget>[
-                                            Container(
-                                              width: 10,
-                                              margin: EdgeInsets.only(right: 5),
-                                              child: Text(titleRow,style: TextStyle(fontSize: 10),),
-                                            ),
+                    child: CustomPaint(
+                      painter: BestSeatCanvas(
 
-                                            ListView.builder(
-                                              itemCount: buildRow.length,
-                                              scrollDirection: Axis.horizontal,
-                                              shrinkWrap: true,
-                                              physics:  NeverScrollableScrollPhysics(),
-                                              itemBuilder: (columnContext,columnIndex){
-                                                int type = (typeRow[columnIndex] as int);
-                                                int status = (statusRow[columnIndex] as int);
-                                                String seatId = (seatIdRow[columnIndex] as String);
-                                                return DrawSeat(rowIndex, columnIndex,seatWidth);
-
-
-                                              },
-                                            ),
-                                          ],
-                                        )
-
-
-                                    )
-                                  ],
-                                );
-
-
-                              },
-                            );
-                          }else{
-                            if(snapshot.connectionState == ConnectionState.done){
-                              Navigator.of(context).pop("abc");
-                            }
+                      ),
+                      child: FutureBuilder(
+                        future: RoomMap.GetMap(_cinema.fetchName,_sessionId,queryTicket),
+                        builder: (context,snapshot){
+                          if(snapshot.connectionState == ConnectionState.waiting && _roomMap == null)
                             return CircularProgressIndicator();
+                          else{
+                            if(snapshot.data != null)
+                              _roomMap = snapshot.data;
+                            if(_roomMap != null){
+                              List<dynamic> areaIndex = _roomMap.area_index2 != null?_roomMap.area_index2:_roomMap.area_index;
+                              return ListView.builder(
+                                physics: NeverScrollableScrollPhysics(),
+                                shrinkWrap: true,
+                                itemCount: areaIndex.length,
+                                itemBuilder: (rowContext,rowIndex){
+                                  List<dynamic> buildRow = areaIndex[rowIndex];
+                                  double seatWidth = (MediaQuery.of(rowContext).size.width-buildRow.length*0.5-40)/_roomMap.seat_id[rowIndex].length;
+                                  if(buildRow.length == 0)
+                                    return Container(height: seatWidth,);
+                                  String titleRow = _roomMap.title[rowIndex];
+                                  List<dynamic> statusRow = _roomMap.status[rowIndex];
+                                  List<dynamic> typeRow = _roomMap.type[rowIndex];
+                                  List<dynamic> seatIdRow = _roomMap.seat_id[rowIndex];
+                                  return Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    children: <Widget>[
+                                      Container(
+                                          height: seatWidth+1,
+                                          child: Row(
+                                            children: <Widget>[
+                                              Container(
+                                                width: 10,
+                                                margin: EdgeInsets.only(right: 5),
+                                                child: Text(titleRow,style: TextStyle(fontSize: 10),),
+                                              ),
+
+                                              ListView.builder(
+                                                itemCount: buildRow.length,
+                                                scrollDirection: Axis.horizontal,
+                                                shrinkWrap: true,
+                                                physics:  NeverScrollableScrollPhysics(),
+                                                itemBuilder: (columnContext,columnIndex){
+                                                  int type = (typeRow[columnIndex] as int);
+                                                  int status = (statusRow[columnIndex] as int);
+                                                  String seatId = (seatIdRow[columnIndex] as String);
+                                                  return DrawSeat(rowIndex, columnIndex,seatWidth);
+
+
+                                                },
+                                              ),
+                                            ],
+                                          )
+
+
+                                      )
+                                    ],
+                                  );
+
+
+                                },
+                              );
+                            }else{
+                              if(snapshot.connectionState == ConnectionState.done){
+                                Navigator.of(context).pop("Có lỗi đã xảy ra");
+                              }
+                              return CircularProgressIndicator();
+                            }
                           }
-                        }
-                      },
-                    ),
+                        },
+                      ),
+                    )
+
+
+
                   ),
 
                 ),//Seat Map

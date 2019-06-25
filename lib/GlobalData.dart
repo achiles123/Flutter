@@ -76,5 +76,8 @@ class GlobalData{
     1:Colors.orangeAccent,
     12:Colors.transparent,
     11:Colors.transparent,
+    5:Colors.blue,
+    6:Color(0xff50e3c2),
+    7:Color(0xff8b572a),
   };
 }

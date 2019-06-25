@@ -55,7 +55,7 @@ class MoviePlayingState extends State<MoviePlayingView>{
                             children: <Widget>[
                               InkWell(
                                 onTap: (){
-
+                                  Navigator.of(context).pushNamed("/booking",arguments: widget._moviePlaying[index]);
                                 },
                                 child: Container(
                                   decoration: BoxDecoration(
