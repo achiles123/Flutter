@@ -51,9 +51,6 @@ class RoomMapViewState extends State<RoomMapView>{
       seatColor = seatColor.withOpacity(0.5);
     if(status != 0 && status != 1)
       seatColor = Colors.black54;
-    switch(type){
-      case 3: statusWidget = Icon(Icons.close,size: seatWidth,color: Colors.white,);break;
-    }
     if(status != 0)
       statusWidget = Icon(Icons.close,size: seatWidth,color: Colors.white,);
     if(seatId == "0"){
@@ -156,7 +153,7 @@ class RoomMapViewState extends State<RoomMapView>{
                 }
 
                 if(quantityChosen >= chooseSeats[chooseSeat.id].quantity){
-                  if(type != 6 && type != 7){
+                  if(type != 6 && type != 7 && type != 3){
                     List<Point> pointTemp = chooseSeats[chooseSeat.id].poins.values.toList();
                     pointTemp[currentPoint] = new Point(rowIndex,columnIndex);
                     for(Point point in pointTemp){
@@ -524,21 +521,29 @@ class RoomMapViewState extends State<RoomMapView>{
                 Flexible(
                   child: Container(
                     padding: EdgeInsets.all(5),
-                    child: CustomPaint(
-                      painter: BestSeatCanvas(
+                    child: FutureBuilder(
+                      future: RoomMap.GetMap(_cinema.fetchName,_sessionId,queryTicket),
+                      builder: (context,snapshot){
+                        if(snapshot.connectionState == ConnectionState.waiting && _roomMap == null)
+                          return CircularProgressIndicator();
+                        else{
+                          if(snapshot.data != null)
+                            _roomMap = snapshot.data;
+                          if(_roomMap != null){
+                            List<dynamic> areaIndex = _roomMap.area_index2 != null?_roomMap.area_index2:_roomMap.area_index;
+                            int rowBestSeat = _roomMap.title.indexOf(_roomMap.best_seat.substring(0,1));
+                            int columnBestSeat = int.parse(_roomMap.best_seat.substring(1));
+                            double size = (MediaQuery.of(context).size.width-_roomMap.seat_code.length*0.5-40)/_roomMap.seat_id[1].length;
+                            return CustomPaint(
+                              painter: BestSeatCanvas(
+                                inlineColor: Colors.black,
+                                inlineOffset: [
+                                  Offset(columnBestSeat*size,rowBestSeat*size+(rowBestSeat-1)*0.5),
+                                  Offset(columnBestSeat*size + size*4,rowBestSeat*size+(rowBestSeat-1)*0.5)
+                                ]
+                              ),
 
-                      ),
-                      child: FutureBuilder(
-                        future: RoomMap.GetMap(_cinema.fetchName,_sessionId,queryTicket),
-                        builder: (context,snapshot){
-                          if(snapshot.connectionState == ConnectionState.waiting && _roomMap == null)
-                            return CircularProgressIndicator();
-                          else{
-                            if(snapshot.data != null)
-                              _roomMap = snapshot.data;
-                            if(_roomMap != null){
-                              List<dynamic> areaIndex = _roomMap.area_index2 != null?_roomMap.area_index2:_roomMap.area_index;
-                              return ListView.builder(
+                              child: ListView.builder(
                                 physics: NeverScrollableScrollPhysics(),
                                 shrinkWrap: true,
                                 itemCount: areaIndex.length,
@@ -589,17 +594,69 @@ class RoomMapViewState extends State<RoomMapView>{
 
 
                                 },
-                              );
-                            }else{
-                              if(snapshot.connectionState == ConnectionState.done){
-                                Navigator.of(context).pop("Có lỗi đã xảy ra");
-                              }
-                              return CircularProgressIndicator();
+                              ),
+                            );
+                            return ListView.builder(
+                              physics: NeverScrollableScrollPhysics(),
+                              shrinkWrap: true,
+                              itemCount: areaIndex.length,
+                              itemBuilder: (rowContext,rowIndex){
+                                List<dynamic> buildRow = areaIndex[rowIndex];
+                                double seatWidth = (MediaQuery.of(rowContext).size.width-buildRow.length*0.5-40)/_roomMap.seat_id[rowIndex].length;
+                                if(buildRow.length == 0)
+                                  return Container(height: seatWidth,);
+                                String titleRow = _roomMap.title[rowIndex];
+                                List<dynamic> statusRow = _roomMap.status[rowIndex];
+                                List<dynamic> typeRow = _roomMap.type[rowIndex];
+                                List<dynamic> seatIdRow = _roomMap.seat_id[rowIndex];
+                                return Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: <Widget>[
+                                    Container(
+                                        height: seatWidth+1,
+                                        child: Row(
+                                          children: <Widget>[
+                                            Container(
+                                              width: 10,
+                                              margin: EdgeInsets.only(right: 5),
+                                              child: Text(titleRow,style: TextStyle(fontSize: 10),),
+                                            ),
+
+                                            ListView.builder(
+                                              itemCount: buildRow.length,
+                                              scrollDirection: Axis.horizontal,
+                                              shrinkWrap: true,
+                                              physics:  NeverScrollableScrollPhysics(),
+                                              itemBuilder: (columnContext,columnIndex){
+                                                int type = (typeRow[columnIndex] as int);
+                                                int status = (statusRow[columnIndex] as int);
+                                                String seatId = (seatIdRow[columnIndex] as String);
+                                                return DrawSeat(rowIndex, columnIndex,seatWidth);
+
+
+                                              },
+                                            ),
+                                          ],
+                                        )
+
+
+                                    )
+                                  ],
+                                );
+
+
+                              },
+                            );
+                          }else{
+                            if(snapshot.connectionState == ConnectionState.done){
+                              Navigator.of(context).pop("Có lỗi đã xảy ra");
                             }
+                            return CircularProgressIndicator();
                           }
-                        },
-                      ),
-                    )
+                        }
+                      },
+                    ),
 
 
 

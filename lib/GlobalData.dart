@@ -72,7 +72,7 @@ class GlobalData{
 
   static final Map<int,Color> seatColor = {
     0:Color(0xffcecece),
-    3:Colors.black54,
+    3:Color(0xffcecece),
     1:Colors.orangeAccent,
     12:Colors.transparent,
     11:Colors.transparent,
