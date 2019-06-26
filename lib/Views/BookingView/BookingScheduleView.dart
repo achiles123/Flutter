@@ -279,7 +279,6 @@ class BookingScheduleViewState extends State<BookingScheduleView>{
                         physics: AlwaysScrollableScrollPhysics(),
                         children: <Widget>[
                           Container(
-                            height: 50,
                             padding: EdgeInsets.all(7),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -301,6 +300,9 @@ class BookingScheduleViewState extends State<BookingScheduleView>{
                                     if(value == false){
                                       setState(() {
                                         GlobalData.locationId = -1;
+                                        widget._schedule =  new Map<String,List<CinemaSchedule>>();
+                                        _scheduleFiltered = new Map<String,List<CinemaSchedule>>();
+                                        _scheduleDetail = null;
                                       });
                                     }else{
                                       showDialog(
@@ -327,7 +329,6 @@ class BookingScheduleViewState extends State<BookingScheduleView>{
                           ),// Change Location
                           Divider(),
                           Container(
-                            height: 50,
                             width: MediaQuery.of(context).size.width,
                             padding: EdgeInsets.all(7),
                             child: Row(
