@@ -52,7 +52,8 @@ class PopupHelper {
 }
 
 class LocationPopup extends StatefulWidget{
-
+  Function onClose;
+  LocationPopup({this.onClose});
   @override
   State<StatefulWidget> createState() {
     // TODO: implement createState
@@ -128,6 +129,8 @@ class LocationPopupState extends State<LocationPopup>{
                           onPressed: (){
                             if(GlobalData.locationId != -1)
                               Navigator.of(context).pop();
+                            if(widget.onClose != null)
+                              widget.onClose();
                           },
                         ),
                       ),// Location confirm

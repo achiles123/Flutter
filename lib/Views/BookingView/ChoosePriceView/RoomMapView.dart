@@ -27,12 +27,13 @@ class RoomMapViewState extends State<RoomMapView>{
   Map<Combo,int> _combos;
   Map<TicketPrice,int> _tickets;
   CinemaAddress _cinemaAddress;
-  Map<String,ChooseSeat> chooseSeats;
-  DateTime ticketDate;
-  String headerText;
-  List<Map<String,dynamic>> queryTicket;
-  String dateName;
-  bool seatError = false;
+  Map<String,ChooseSeat> _chooseSeats;
+  DateTime _ticketDate;
+  String _headerText;
+  List<Map<String,dynamic>> _queryTicket;
+  String _dateName;
+  String _chosenHeaderText = "";
+  int _amount;
 
   Widget DrawSeat(int rowIndex,int columnIndex,double seatWidth){
     double seatHeight = seatWidth;
@@ -75,7 +76,7 @@ class RoomMapViewState extends State<RoomMapView>{
       );
 
     }
-    List<ChooseSeat> temp = chooseSeats.values.toList();
+    List<ChooseSeat> temp = _chooseSeats.values.toList();
     if(temp.any((f)=>f.poins.values.any((f)=> f.x == rowIndex && f.y == columnIndex))){
       checkChosen = true;
       seatColor = Color(0xff44c020);
@@ -137,7 +138,7 @@ class RoomMapViewState extends State<RoomMapView>{
         return InkWell(
             onTap: (){
               int areaId = _roomMap.area_id[rowIndex][columnIndex];
-              ChooseSeat chooseSeat = chooseSeats.values.firstWhere((f)=>f.area_id == areaId,orElse: ()=> null);
+              ChooseSeat chooseSeat = _chooseSeats.values.firstWhere((f)=>f.area_id == areaId,orElse: ()=> null);
               if(chooseSeat == null)
                 return;
               int currentPoint = chooseSeat.current_point;
@@ -147,57 +148,78 @@ class RoomMapViewState extends State<RoomMapView>{
                 }
                 if(statusRow[columnIndex] != 0)
                   return;
-                int quantityChosen = chooseSeats[chooseSeat.id].quantity_chosen;
-                if(chooseSeats[chooseSeat.id].poins[currentPoint].x == -1){
+                int quantityChosen = _chooseSeats[chooseSeat.id].quantity_chosen;
+                if(_chooseSeats[chooseSeat.id].poins[currentPoint].x == -1){
                   quantityChosen += 1;
                 }
-
-                if(quantityChosen >= chooseSeats[chooseSeat.id].quantity){
+                bool checkSeatError = false;
+                if(quantityChosen >= _chooseSeats[chooseSeat.id].quantity){
+                  // Validate except couple, longseat, firstclass
                   if(type != 6 && type != 7 && type != 3){
-                    List<Point> pointTemp = chooseSeats[chooseSeat.id].poins.values.toList();
-                    pointTemp[currentPoint] = new Point(rowIndex,columnIndex);
+                    _chooseSeats[chooseSeat.id].poins[currentPoint] = new Point(rowIndex,columnIndex);
+                    List<Point> pointTemp = _chooseSeats[chooseSeat.id].poins.values.toList();
                     for(Point point in pointTemp){
-                      if(pointTemp.any((p)=>p.x == point.x && (p.y - point.y).abs() == 2)){
-                        Scaffold.of(context).removeCurrentSnackBar(reason: SnackBarClosedReason.dismiss);
-                        Scaffold.of(context).showSnackBar(SnackBar(
-                          duration: Duration(seconds: 2),
-                          content: Text("Không được để trống khoảng cách ở giữa"),
-                        ));
-                        seatError = true;
+                      for(MapEntry<int,Point> p in _chooseSeats[chooseSeat.id].poins.entries){
+                        if(p.value.x == point.x && (p.value.y - point.y).abs() == 2){
+                          Scaffold.of(context).removeCurrentSnackBar(reason: SnackBarClosedReason.dismiss);
+                          Scaffold.of(context).showSnackBar(SnackBar(
+                            duration: Duration(seconds: 2),
+                            content: Text("Vui lòng không để trống ở giữa"),
+                          ));
+                          _chooseSeats[chooseSeat.id].errors[p.key] = 1;
+                          if(_chooseSeats[chooseSeat.id].poins[currentPoint].x == point.x && _chooseSeats[chooseSeat.id].poins[currentPoint].y == point.y){
+                            checkSeatError = true;
+                          }
+                          break;
+                        }
                       }
 
                     }
-                    for(Point point in pointTemp){
-                      List<int> statusRow = List.from(_roomMap.status[point.x]);
+                    for(MapEntry<int,Point> point in _chooseSeats[chooseSeat.id].poins.entries){
+                      List<int> statusRow = List.from(_roomMap.status[point.value.x]);
                       int beginIndex = statusRow.indexOf(0);
                       int lastIndex = statusRow.lastIndexOf(0);
-                      Point existedPoint = pointTemp.firstWhere((f)=> f.x == point.x && (f.y == beginIndex || f.y == lastIndex ),orElse:()=> null);
-                      if(existedPoint != null && point.y - 1 != existedPoint.y && point.y + 1 != existedPoint.y && (point.y - 1 == beginIndex || point.y + 1 == lastIndex)){
+                      Point existedPoint = pointTemp.firstWhere((f)=> f.x == point.value.x && (f.y == beginIndex || f.y == lastIndex ),orElse:()=> null);
+                      if(existedPoint != null && point.value.y - 1 != existedPoint.y && point.value.y + 1 != existedPoint.y && (point.value.y - 1 == beginIndex || point.value.y + 1 == lastIndex)){
                         Scaffold.of(context).removeCurrentSnackBar(reason: SnackBarClosedReason.dismiss);
                         Scaffold.of(context).showSnackBar(SnackBar(
                           duration: Duration(seconds: 2),
-                          content: Text("Không được để trống đầu dãy"),
+                          content: Text("Vui lòng không để trống đầu dãy"),
                         ));
-                        seatError = true;
+                        _chooseSeats[chooseSeat.id].errors[point.key] = 2;
+                        if(_chooseSeats[chooseSeat.id].poins[currentPoint].x == point.value.x && _chooseSeats[chooseSeat.id].poins[currentPoint].y == point.value.y){
+                          checkSeatError = true;
+                        }
+                        break;
                       }
-                      if(existedPoint == null && (point.y - 1 == beginIndex || point.y + 1 == lastIndex)){
+                      if(existedPoint == null && (point.value.y - 1 == beginIndex || point.value.y + 1 == lastIndex)){
                         Scaffold.of(context).removeCurrentSnackBar(reason: SnackBarClosedReason.dismiss);
                         Scaffold.of(context).showSnackBar(SnackBar(
                           duration: Duration(seconds: 2),
-                          content: Text("Không được để trống đầu dãy"),
+                          content: Text("Vui lòng không để trống đầu dãy"),
                         ));
-                        seatError = true;
+                        _chooseSeats[chooseSeat.id].errors[point.key] = 2;
+                        if(_chooseSeats[chooseSeat.id].poins[currentPoint].x == point.value.x && _chooseSeats[chooseSeat.id].poins[currentPoint].y == point.value.y){
+                          checkSeatError = true;
+                        }
+                        break;
                       }
                     }
                   }
 
                 }
-                chooseSeats[chooseSeat.id].poins[currentPoint] = new Point(rowIndex,columnIndex);
+                _chooseSeats[chooseSeat.id].poins[currentPoint] = new Point(rowIndex,columnIndex);
                 currentPoint += 1;
-                chooseSeats[chooseSeat.id].current_point = currentPoint%chooseSeat.poins.length;
-                if(quantityChosen <= chooseSeats[chooseSeat.id].quantity)
-                  chooseSeats[chooseSeat.id].quantity_chosen = quantityChosen;
-                seatError = false;
+                _chooseSeats[chooseSeat.id].current_point = currentPoint%chooseSeat.poins.length;
+                if(quantityChosen <= _chooseSeats[chooseSeat.id].quantity)
+                  _chooseSeats[chooseSeat.id].quantity_chosen = quantityChosen;
+                if(checkSeatError == false)
+                  _chooseSeats[chooseSeat.id].errors[currentPoint] = 0;
+                List<String> temp = new List<String>();
+                for(ChooseSeat item in _chooseSeats.values){
+                  temp.addAll(item.poins.values.toList().where((f)=>f.x != -1).map((f)=> _roomMap.seat_code[f.x][f.y] as String));
+                }
+                _chosenHeaderText = temp.join(",");
               });
 
             },
@@ -429,26 +451,27 @@ class RoomMapViewState extends State<RoomMapView>{
       _combos = args["chooseCombo"];
       _cinemaAddress = args["address"];
       _movie = args["movie"];
+      _amount = args["amount"];
       _sessionId = _tickets.keys.first.session_id;
-      queryTicket = new List<Map<String,dynamic>>();
-      chooseSeats = new Map<String,ChooseSeat>();
-      headerText = "Vui lòng chọn ";
+      _queryTicket = new List<Map<String,dynamic>>();
+      _chooseSeats = new Map<String,ChooseSeat>();
+      _headerText = "Vui lòng chọn ";
       for(MapEntry<TicketPrice,int> item in _tickets.entries){
-        chooseSeats.addAll({item.key.type_code:new ChooseSeat(id: item.key.type_code,area_id: item.key.area_id,quantity: item.value,quantity_chosen: 0  )});
-        headerText += item.value.toString()+" "+item.key.type_description+" ";
-        queryTicket.add({
+        _chooseSeats.addAll({item.key.type_code:new ChooseSeat(id: item.key.type_code,area_id: item.key.area_id,quantity: item.value,quantity_chosen: 0  )});
+        _headerText += item.value.toString()+" "+item.key.type_description+" ";
+        _queryTicket.add({
           "type_num":item.value,
           "type_code":item.key.type_code,
           "type_max":10,
           "type_area":item.key.area_id
         });
       }
-      ticketDate = DateFormat("yyyy-MM-dd HH:mm").parse(_tickets.keys.first.session_time);
-      dateName = DateFormat("dd/MM").format(ticketDate);
-      if(formatDate.format(ticketDate) == formatDate.format(DateTime.now()))
-        dateName = "Hôm nay";
-      if(formatDate.format(ticketDate) == formatDate.format(DateTime.now().add(Duration(days: 1))))
-        dateName = "Ngày mai";
+      _ticketDate = DateFormat("yyyy-MM-dd HH:mm").parse(_tickets.keys.first.session_time);
+      _dateName = DateFormat("dd/MM").format(_ticketDate);
+      if(formatDate.format(_ticketDate) == formatDate.format(DateTime.now()))
+        _dateName = "Hôm nay";
+      if(formatDate.format(_ticketDate) == formatDate.format(DateTime.now().add(Duration(days: 1))))
+        _dateName = "Ngày mai";
     }
 
     return Scaffold(
@@ -470,207 +493,290 @@ class RoomMapViewState extends State<RoomMapView>{
             ),
             Row(
               children: <Widget>[
-                Text(dateName+"-"+formatTime.format(ticketDate)+"-"+_tickets.keys.first.room_title,style: TextStyle(fontSize: 14)),
+                Text(_dateName+"-"+formatTime.format(_ticketDate)+"-"+_tickets.keys.first.room_title,style: TextStyle(fontSize: 14)),
               ],
             ),
           ],
         ),
       ),
-      body: Container(
-          height: double.infinity,
-          color: Colors.white,
-          child: Container(
-            margin: EdgeInsets.all(3),
-            child: Column(
-              children: <Widget>[
-                Container(
-                  alignment: Alignment.center,
-                  margin: EdgeInsets.only(bottom: 5),
-                  child: Text(headerText),
-                ),
-                Container(
-                  height: 5,
-                  decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(10),
-                      color: Colors.blue
-                  ),
-                ),
-                Container(
-                  width: MediaQuery.of(context).size.width,
-                  decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          Colors.black12,
-                          Colors.black12.withOpacity(0.01)
-                        ],
-                        stops: [
-                          0.1,
-                          0.9
-                        ],
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                      )
-                  ),
-                  child: Column(
-                    children: <Widget>[
-                      Text("Màn Hình",textAlign: TextAlign.center,),
-                      Text("("+_movie.film_name_vn+")",textAlign: TextAlign.center,),
-                    ],
-                  ),
-                ),
-                Flexible(
-                  child: Container(
-                    padding: EdgeInsets.all(5),
-                    child: FutureBuilder(
-                      future: RoomMap.GetMap(_cinema.fetchName,_sessionId,queryTicket),
-                      builder: (context,snapshot){
-                        if(snapshot.connectionState == ConnectionState.waiting && _roomMap == null)
-                          return CircularProgressIndicator();
-                        else{
-                          if(snapshot.data != null)
-                            _roomMap = snapshot.data;
-                          if(_roomMap != null){
-                            List<dynamic> areaIndex = _roomMap.area_index2 != null?_roomMap.area_index2:_roomMap.area_index;
-                            int rowBestSeat = _roomMap.title.indexOf(_roomMap.best_seat.substring(0,1));
-                            int columnBestSeat = int.parse(_roomMap.best_seat.substring(1));
-                            double size = (MediaQuery.of(context).size.width-_roomMap.seat_code.length*0.5-40)/_roomMap.seat_id[1].length;
-                            return CustomPaint(
-                              painter: BestSeatCanvas(
-                                inlineColor: Colors.black,
-                                inlineOffset: [
-                                  Offset(columnBestSeat*size,rowBestSeat*size+(rowBestSeat-1)*0.5),
-                                  Offset(columnBestSeat*size + size*4,rowBestSeat*size+(rowBestSeat-1)*0.5)
-                                ]
-                              ),
+      body: Builder(
+        builder: (bodyContext){
+          return Container(
+              height: double.infinity,
+              color: Colors.white,
+              child: Container(
+                child: Column(
+                  children: <Widget>[
+                    Container(
+                      margin: EdgeInsets.all(3),
+                      height: MediaQuery.of(bodyContext).size.height-136,
+                      child: ListView(
+                        shrinkWrap: true,
+                        physics: AlwaysScrollableScrollPhysics(),
+                        children: <Widget>[
+                          Container(
+                            alignment: Alignment.center,
+                            margin: EdgeInsets.only(bottom: 5),
+                            child: Text(_headerText),
+                          ),
+                          Container(
+                            alignment: Alignment.center,
+                            margin: EdgeInsets.only(bottom: 5),
+                            child: Text("Đã chọn: "+_chosenHeaderText),
+                          ),
+                          Container(
+                            height: 5,
+                            decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(10),
+                                color: Colors.blue
+                            ),
+                          ),
+                          Container(
+                            width: MediaQuery.of(context).size.width,
+                            decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [
+                                    Colors.black12,
+                                    Colors.black12.withOpacity(0.01)
+                                  ],
+                                  stops: [
+                                    0.1,
+                                    0.9
+                                  ],
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                )
+                            ),
+                            child: Column(
+                              children: <Widget>[
+                                Text("Màn Hình",textAlign: TextAlign.center,),
+                                Text("("+_movie.film_name_vn+")",textAlign: TextAlign.center,),
+                              ],
+                            ),
+                          ),
+                          Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: <Widget>[
+                              Flexible(
+                                child: Container(
+                                  padding: EdgeInsets.all(5),
+                                  child: FutureBuilder(
+                                    future: RoomMap.GetMap(_cinema.fetchName,_sessionId,_queryTicket),
+                                    builder: (context,snapshot){
+                                      if(snapshot.connectionState == ConnectionState.waiting && _roomMap == null)
+                                        return CircularProgressIndicator();
+                                      else{
+                                        if(snapshot.data != null)
+                                          _roomMap = snapshot.data;
+                                        if(_roomMap != null){
+                                          List<dynamic> areaIndex = _roomMap.area_index2 != null?_roomMap.area_index2:_roomMap.area_index;
+                                          int rowBestSeat = _roomMap.title.indexOf(_roomMap.best_seat.substring(0,1));
+                                          int columnBestSeat = List.from(_roomMap.seat_code[rowBestSeat]).indexOf(_roomMap.best_seat);
+                                          double size = (MediaQuery.of(context).size.width-_roomMap.seat_code[1].length*0.5-40)/_roomMap.seat_id[1].length;
+                                          //print("Formula:"+MediaQuery.of(context).size.width.toString()+"-"+_roomMap.seat_code[1].length.toString()+"-"+_roomMap.seat_id[1].length.toString()+"  .Size :"+size.toString());
+                                          Offset startPoint = Offset(columnBestSeat*size -2, rowBestSeat*size+rowBestSeat-2);
+                                          Offset endPoint = Offset(columnBestSeat*size + size*4 + 6, rowBestSeat*size+rowBestSeat-2);
+                                          Offset heightPoint = Offset(startPoint.dx+(endPoint.dx-startPoint.dx)/2, (rowBestSeat+3)*size+rowBestSeat+6);
 
-                              child: ListView.builder(
-                                physics: NeverScrollableScrollPhysics(),
-                                shrinkWrap: true,
-                                itemCount: areaIndex.length,
-                                itemBuilder: (rowContext,rowIndex){
-                                  List<dynamic> buildRow = areaIndex[rowIndex];
-                                  double seatWidth = (MediaQuery.of(rowContext).size.width-buildRow.length*0.5-40)/_roomMap.seat_id[rowIndex].length;
-                                  if(buildRow.length == 0)
-                                    return Container(height: seatWidth,);
-                                  String titleRow = _roomMap.title[rowIndex];
-                                  List<dynamic> statusRow = _roomMap.status[rowIndex];
-                                  List<dynamic> typeRow = _roomMap.type[rowIndex];
-                                  List<dynamic> seatIdRow = _roomMap.seat_id[rowIndex];
-                                  return Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    children: <Widget>[
-                                      Container(
-                                          height: seatWidth+1,
-                                          child: Row(
-                                            children: <Widget>[
-                                              Container(
-                                                width: 10,
-                                                margin: EdgeInsets.only(right: 5),
-                                                child: Text(titleRow,style: TextStyle(fontSize: 10),),
-                                              ),
-
-                                              ListView.builder(
-                                                itemCount: buildRow.length,
-                                                scrollDirection: Axis.horizontal,
-                                                shrinkWrap: true,
-                                                physics:  NeverScrollableScrollPhysics(),
-                                                itemBuilder: (columnContext,columnIndex){
-                                                  int type = (typeRow[columnIndex] as int);
-                                                  int status = (statusRow[columnIndex] as int);
-                                                  String seatId = (seatIdRow[columnIndex] as String);
-                                                  return DrawSeat(rowIndex, columnIndex,seatWidth);
-
-
-                                                },
-                                              ),
-                                            ],
-                                          )
-
-
-                                      )
-                                    ],
-                                  );
-
-
-                                },
-                              ),
-                            );
-                            return ListView.builder(
-                              physics: NeverScrollableScrollPhysics(),
-                              shrinkWrap: true,
-                              itemCount: areaIndex.length,
-                              itemBuilder: (rowContext,rowIndex){
-                                List<dynamic> buildRow = areaIndex[rowIndex];
-                                double seatWidth = (MediaQuery.of(rowContext).size.width-buildRow.length*0.5-40)/_roomMap.seat_id[rowIndex].length;
-                                if(buildRow.length == 0)
-                                  return Container(height: seatWidth,);
-                                String titleRow = _roomMap.title[rowIndex];
-                                List<dynamic> statusRow = _roomMap.status[rowIndex];
-                                List<dynamic> typeRow = _roomMap.type[rowIndex];
-                                List<dynamic> seatIdRow = _roomMap.seat_id[rowIndex];
-                                return Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  children: <Widget>[
-                                    Container(
-                                        height: seatWidth+1,
-                                        child: Row(
-                                          children: <Widget>[
-                                            Container(
-                                              width: 10,
-                                              margin: EdgeInsets.only(right: 5),
-                                              child: Text(titleRow,style: TextStyle(fontSize: 10),),
+                                          Offset startPointO = Offset((columnBestSeat-2)*size -2, (rowBestSeat-1)*size+rowBestSeat-2);
+                                          Offset endPointO = Offset(columnBestSeat*size + size*4 +size*2 + 6, (rowBestSeat-1)*size+rowBestSeat-2);
+                                          Offset heightPointO = Offset(startPoint.dx+(endPointO.dx-startPointO.dx)/2, (rowBestSeat+5)*size+rowBestSeat+6);
+                                          return CustomPaint(
+                                            foregroundPainter: BestSeatCanvas(
+                                                inlineColor: Colors.red,
+                                                outlineColor: Colors.redAccent,
+                                                width: 1.5,
+                                                inlineOffset: [startPoint, endPoint, heightPoint,],
+                                                outlineOffset: [startPointO,endPointO,heightPointO]
                                             ),
 
-                                            ListView.builder(
-                                              itemCount: buildRow.length,
-                                              scrollDirection: Axis.horizontal,
+                                            child: ListView.builder(
+                                              physics: NeverScrollableScrollPhysics(),
                                               shrinkWrap: true,
-                                              physics:  NeverScrollableScrollPhysics(),
-                                              itemBuilder: (columnContext,columnIndex){
-                                                int type = (typeRow[columnIndex] as int);
-                                                int status = (statusRow[columnIndex] as int);
-                                                String seatId = (seatIdRow[columnIndex] as String);
-                                                return DrawSeat(rowIndex, columnIndex,seatWidth);
+                                              itemCount: areaIndex.length,
+                                              itemBuilder: (rowContext,rowIndex){
+                                                List<dynamic> buildRow = areaIndex[rowIndex];
+                                                double seatWidth = (MediaQuery.of(rowContext).size.width-buildRow.length-31)/_roomMap.seat_id[rowIndex].length;
+                                                //print("Formula:"+MediaQuery.of(rowContext).size.width.toString()+"-"+buildRow.length.toString()+"-"+_roomMap.seat_id[rowIndex].length.toString()+"  .Real Size :"+seatWidth.toString());
+                                                if(buildRow.length == 0)
+                                                  return Container(height: seatWidth,);
+                                                String titleRow = _roomMap.title[rowIndex];
+                                                List<dynamic> statusRow = _roomMap.status[rowIndex];
+                                                List<dynamic> typeRow = _roomMap.type[rowIndex];
+                                                List<dynamic> seatIdRow = _roomMap.seat_id[rowIndex];
+                                                return Row(
+                                                  mainAxisSize: MainAxisSize.min,
+                                                  mainAxisAlignment: MainAxisAlignment.start,
+                                                  children: <Widget>[
+                                                    Container(
+                                                        height: seatWidth+1,
+                                                        child: Row(
+                                                          children: <Widget>[
+                                                            Container(
+                                                              width: 10,
+                                                              margin: EdgeInsets.only(right: 5),
+                                                              child: Text(titleRow,style: TextStyle(fontSize: 10),),
+                                                            ),
+
+                                                            ListView.builder(
+                                                              itemCount: buildRow.length,
+                                                              scrollDirection: Axis.horizontal,
+                                                              shrinkWrap: true,
+                                                              physics:  NeverScrollableScrollPhysics(),
+                                                              itemBuilder: (columnContext,columnIndex){
+                                                                int type = (typeRow[columnIndex] as int);
+                                                                int status = (statusRow[columnIndex] as int);
+                                                                String seatId = (seatIdRow[columnIndex] as String);
+                                                                return DrawSeat(rowIndex, columnIndex,seatWidth);
+
+
+                                                              },
+                                                            ),
+                                                          ],
+                                                        )
+
+
+                                                    )
+                                                  ],
+                                                );
 
 
                                               },
                                             ),
-                                          ],
-                                        )
+                                          );
+
+                                        }else{
+                                          if(snapshot.connectionState == ConnectionState.done){
+                                            Navigator.of(context).pop("Có lỗi đã xảy ra");
+                                          }
+                                          return CircularProgressIndicator();
+                                        }
+                                      }
+                                    },
+                                  ),
 
 
-                                    )
-                                  ],
-                                );
 
+                                ),
 
-                              },
-                            );
-                          }else{
-                            if(snapshot.connectionState == ConnectionState.done){
-                              Navigator.of(context).pop("Có lỗi đã xảy ra");
-                            }
-                            return CircularProgressIndicator();
-                          }
-                        }
-                      },
+                              ),//Seat Map
+                            ],
+                          ),
+                          SeatNote(),
+
+                        ],
+                      ),
                     ),
+                    Card(
+                      elevation: 0.5,
+                      shape: OutlineInputBorder(borderRadius: BorderRadius.circular(0),borderSide: BorderSide(color: Colors.black26),gapPadding: 0),
+                      margin: EdgeInsets.all(0),
+
+                      //borderOnForeground: true,
+
+                      child: Container(
+                        height: 50,
+                        child: Row(
+                          children: <Widget>[
+                            Container(
+                              width: MediaQuery.of(context).size.width*0.5,
+                              margin: EdgeInsets.only(left: 7),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: <Widget>[
+                                  Container(
+                                    child: Stack(
+                                      children: <Widget>[
+                                        Container(
+                                          margin: EdgeInsets.only(top: 5,right: 5),
+                                          child: Icon(Icons.event_note,size: 26,color: Colors.grey,),
+                                        ),
+
+                                        Positioned(
+                                          top: 0,
+                                          right: 0,
+                                          child: Container(
+                                            decoration: BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              color: Colors.red,
+                                            ),
+                                            padding: EdgeInsets.all(3),
+                                            child: Text(
+                                              (_tickets.values.toList().reduce((x,y)=> x+y )+(_combos.length == 0?0:_combos.values.toList().reduce((x,y)=>x+y))).toString(),
+                                              style: TextStyle(color: Colors.white,fontSize: 8),),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Container(
+                                    margin: EdgeInsets.only(left: 3),
+                                    child: Text(NumberFormat("#,##0","en_US").format(_amount).replaceAll(",", "."),style: TextStyle(color: Color(0xff267326),fontSize: 18),),
+                                  ),
+                                  Container(
+                                    margin: EdgeInsets.only(left: 3),
+                                    child: Text("đ",style: TextStyle(color: Colors.grey),),
+                                  )
+                                ],
+                              ),
+                            ),
+                            Flexible(
+                              child: InkWell(
+                                onTap: () async {
+                                  if(_chooseSeats.values.firstWhere((f)=>f.quantity == f.quantity_chosen,orElse: ()=>null) == null)
+                                    return;
+                                  
+                                  for(ChooseSeat item in _chooseSeats.values){
+                                    for(var error in item.errors.entries){
+                                      if(error.value != 0){
+                                        String messageError;
+                                        switch(error.value){
+                                          case 1:messageError = "Vui lòng không để trống ở giữa";break;
+                                          case 2:messageError = "Vui lòng không để trống đầu dãy";break;
+                                        }
+                                        Scaffold.of(bodyContext).removeCurrentSnackBar(reason: SnackBarClosedReason.dismiss);
+                                        Scaffold.of(bodyContext).showSnackBar(SnackBar(
+                                          duration: Duration(milliseconds: 4000),
+                                          content: Text(messageError),
+                                          action: SnackBarAction(label: "Ẩn", onPressed: (){
+                                            Scaffold.of(bodyContext).removeCurrentSnackBar(reason: SnackBarClosedReason.dismiss);
+                                          }),
+                                        ));
+                                        return;
+                                      }
+                                    }
+                                  }
+                                },
+                                child: Container(
+                                  height: 100,
+                                  color: Color(_chooseSeats.values.firstWhere((f)=>f.quantity == f.quantity_chosen,orElse: ()=>null) == null?0xffb3b3b3:0xff267326),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: <Widget>[
+                                      Text("TIẾP TỤC",style: TextStyle(color: Colors.white,fontSize: 18),),
+                                      Icon(Icons.arrow_forward,color: Colors.white,size: 22,)
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )// Footer
+                  ],
+                ),
+              )
+
+
+          );
+        },
+      )
 
 
 
-                  ),
-
-                ),//Seat Map
-                SeatNote(),
-
-              ],
-            ),
-          )
 
 
-      ),
     );
   }
 }
@@ -680,12 +786,15 @@ class ChooseSeat{
   final int quantity;
   int quantity_chosen;
   int current_point;
+  Map<int,int> errors;
   Map<int,Point> poins;
   ChooseSeat({String this.id,int this.area_id,int this.quantity,int this.quantity_chosen,}){
     current_point = 0;
     poins = new Map<int,Point>();
+    errors = new Map<int,int>();
     for(int i=0;i<quantity;i++){
        poins.addAll({i:Point(-1,-1)});
+       errors.addAll({i:0});
     }
   }
 }

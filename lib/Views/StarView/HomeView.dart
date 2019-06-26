@@ -408,7 +408,7 @@ class HomeViewState extends State<HomeView>{
                                       color: Colors.redAccent,
                                       child: Text("ĐẶT VÉ",style: TextStyle(color: Colors.white),),
                                       onPressed: (){
-
+                                        Navigator.of(context).pushNamed("/booking",arguments: widget._movieHome[index]);
                                       },
                                     ),
                                   ), // Column 3

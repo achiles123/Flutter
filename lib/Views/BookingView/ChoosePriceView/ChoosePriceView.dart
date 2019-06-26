@@ -48,8 +48,10 @@ class ChoosePriceState extends State<ChoosePriceView>{
       widget._cinemaAddress = args["address"];
       widget._tickets = args["tickets"];
       chooseTicket = new Map<String,int>();
-      for(TicketPrice ticket in widget._tickets){
-        chooseTicket.addAll({ticket.type_code:0});
+      for(int i=0;i<widget._tickets.length;i++){
+        chooseTicket.addAll({widget._tickets[i].type_code:(i==0?2:0)});
+        if(i==0)
+          amount += widget._tickets[i].type_price*2;
       }
     }
     DateFormat formatDate = new DateFormat("yyyy-MM-dd");
@@ -457,6 +459,15 @@ class ChoosePriceState extends State<ChoosePriceView>{
                           Flexible(
                             child: InkWell(
                               onTap: () async {
+                                int ticketQuantity = chooseTicket.values.toList().reduce((x,y)=> x+y );
+                                if(ticketQuantity == 0){
+                                  Scaffold.of(context).removeCurrentSnackBar(reason: SnackBarClosedReason.dismiss);
+                                  Scaffold.of(context).showSnackBar(SnackBar(
+                                    content: Text("Vui lòng chọn vé"),
+                                    action: SnackBarAction(label: "Ẩn", onPressed: null),
+                                  ));
+                                  return;
+                                }
                                 Map<TicketPrice,int> sendTicket = new Map<TicketPrice,int>();
                                 for(MapEntry<String,int> item in chooseTicket.entries){
                                   if(item.value != 0){
@@ -475,6 +486,7 @@ class ChoosePriceState extends State<ChoosePriceView>{
                                   "chooseCombo" : sendCombo,
                                   "cinema" : widget._cinema,
                                   "address": widget._cinemaAddress,
+                                  "amount": amount,
                                 });
                                 Navigator.of(context).pop(returnMessage);
                               },

@@ -1,4 +1,5 @@
-
+import 'dart:math' show cos,sin;
+import 'dart:math';
 import 'package:intl/intl.dart';
 
 class Helper{
@@ -37,5 +38,14 @@ class Helper{
     }
     name += dayName + ", "+DateFormat("d").format(date)+" tháng "+DateFormat("M").format(date)+", "+DateFormat("y").format(date);
     return name;
+  }
+
+  static double CalculateDistance(double x1,double y1,double x2,double y2){
+    var p = 0.017453292519943295;
+    var c = cos;
+    var a = 0.5 - c((x2 - x1) * p)/2 +
+        c(x1 * p) * c(x2 * p) *
+            (1 - c((y2 - y1) * p))/2;
+    return 12742 * asin(sqrt(a));
   }
 }

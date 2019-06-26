@@ -1,7 +1,9 @@
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:http/http.dart' as http;
 import '../GlobalData.dart';
+import '../Helper.dart';
 import 'Cinema.dart';
 import 'TicketPrice.dart';
 
@@ -20,14 +22,14 @@ class CinemaAddress{
   String session_code;
   String session_id;
   bool _locking = false;
+  double distance;
   List<TicketPrice> ticket_price;
   Map<String,dynamic> versions;
 
   CinemaAddress({this.cinema_address,this.cinema_id,this.cinema_image,this.cinema_latitude,this.cinema_longitude,this.cinema_name,this.cinema_name_s1,
-    this.cinema_name_s2,this.cinema_slug,this.ticket_price,this.parent_cinema,this.versions});
+    this.cinema_name_s2,this.cinema_slug,this.ticket_price,this.parent_cinema,this.versions,this.distance});
 
   factory CinemaAddress.partseJson(Map<String,dynamic> json){
-
     return CinemaAddress(
       cinema_address: json["cinema_address"],
       cinema_id: json["cinema_id"],
@@ -41,6 +43,7 @@ class CinemaAddress{
       parent_cinema: json["parent_cinema"],
       ticket_price: new List<TicketPrice>(),
       versions: json["versions"],
+      distance: Helper.CalculateDistance(double.parse(json["cinema_latitude"].toString()),double.parse(json["cinema_longitude"].toString()),GlobalData.locationPosition.latitude,GlobalData.locationPosition.longitude),
     );
   }
 

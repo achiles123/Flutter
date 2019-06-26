@@ -69,7 +69,6 @@ class BookingScheduleViewState extends State<BookingScheduleView>{
                     key: GlobalKey(debugLabel: "key"+index.toString()),
                     animationDuration: Duration(milliseconds: 700),
                     expansionCallback: (indexChild,status){
-                      int a = 1;
                       setState(() {
                         if(_selectedCinema == index){
                           _toggle = !_toggle;
@@ -126,8 +125,21 @@ class BookingScheduleViewState extends State<BookingScheduleView>{
                                                 return Container(
                                                   child: Row(
                                                     children: <Widget>[
-                                                      Text(GlobalData.parentCinema[index].shortName,style: TextStyle(color: GlobalData.parentCinema[index].color),),
-                                                      Text(" - "+_scheduleDetail.cinemas[indexChild].cinema_name_s2)
+                                                      Flexible(
+                                                        child: Row(
+                                                          children: <Widget>[
+                                                            Text(GlobalData.parentCinema[index].shortName,style: TextStyle(color: GlobalData.parentCinema[index].color),),
+                                                            Text(" - "+_scheduleDetail.cinemas[indexChild].cinema_name_s2),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                      Row(
+                                                        children: <Widget>[
+                                                          Icon(Icons.send,size: 10,color: Colors.black54,),
+                                                          Text(" "+_scheduleDetail.cinemas[indexChild].distance.toStringAsFixed(1)),
+                                                          Text(" km",style: TextStyle(color: Colors.black38),)
+                                                        ],
+                                                      )
                                                     ],
                                                   ),
                                                 );
@@ -295,7 +307,14 @@ class BookingScheduleViewState extends State<BookingScheduleView>{
                                           context: context,
                                           barrierDismissible: false,
                                           builder: (context){
-                                            return new LocationPopup();
+                                            return new LocationPopup(
+                                              onClose: (){
+                                                setState(() {
+                                                  widget._schedule =  new Map<String,List<CinemaSchedule>>();
+                                                  _scheduleFiltered = new Map<String,List<CinemaSchedule>>();
+                                                });
+                                              },
+                                            );
                                           }
                                       );
                                     }
