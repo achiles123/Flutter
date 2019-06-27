@@ -32,6 +32,7 @@ class HomeView extends StatefulWidget{
 
 class HomeViewState extends State<HomeView>{
   PageController _pageController;
+  int _currentVoucher = -1;
 
   @override
   void initState() {
@@ -239,8 +240,9 @@ class HomeViewState extends State<HomeView>{
   }
 
   Widget GetNewsVoucher(){
-    return SizedBox(
+    return Container(
       height: 150,
+      alignment: Alignment.center,
       child:  StreamBuilder(
         stream: widget._newsVoucher == null?Stream.fromFuture(widget._news.GetPromotion()).asBroadcastStream():Stream.fromFuture(new Future<List<News>>(()=>widget._newsVoucher)).asBroadcastStream(),
         builder: (context,snapshot){
@@ -253,12 +255,20 @@ class HomeViewState extends State<HomeView>{
               return PageView.builder(
                   controller: _pageController,
                   itemCount: widget._newsVoucher.length,
+                  reverse: true,
+                  onPageChanged: (index){
+                    setState(() {
+                      _currentVoucher = index;
+                    });
+                  },
                   itemBuilder: (context,index){
-                    return AnimatedContainer(
-                      duration: Duration(milliseconds: 0),
-                      curve: Curves.easeOutBack,
-                      margin: EdgeInsets.only( bottom: 5,top: 5,right: 10,left: 10),
-                      decoration: BoxDecoration(
+                    return Container(
+                      margin: EdgeInsets.only( bottom: 5,top: 5,right:10,left: 10),
+                      padding: EdgeInsets.only(bottom: _currentVoucher == index?0:7,top: _currentVoucher == index?0:7,left: _currentVoucher == index?0:5,right: _currentVoucher == index?0:5, ),
+                      child: AnimatedContainer(
+                        duration: Duration(milliseconds: 500),
+                        curve: Curves.easeOutBack,
+                        decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(5),
                           boxShadow: [
                             BoxShadow(
@@ -269,11 +279,13 @@ class HomeViewState extends State<HomeView>{
                             )
                           ],
                           image: DecorationImage(image: NetworkImage(widget._newsVoucher[index].image_full),fit: BoxFit.fill)
-                      ),
-                      child: InkWell(
-                        onTap: (){},
+                        ),
+                        child: InkWell(
+                          onTap: (){},
+                        ),
                       ),
                     );
+
                   }
               );
             }else{

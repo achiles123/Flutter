@@ -42,6 +42,7 @@ class BestSeatCanvas extends CustomPainter{
     pathOutline.cubicTo(startPointO.dx - 2, heightPointO.dy, endPointO.dx + 2,  heightPointO.dy, endPointO.dx, endPointO.dy);
     pathOutline.lineTo(startPointO.dx, startPointO.dy);
     canvas.drawPath(dashPath(pathOutline, dashArray: CircularIntervalList<double>(<double>[10,5])),paintOutline);
+
   }
 
   @override

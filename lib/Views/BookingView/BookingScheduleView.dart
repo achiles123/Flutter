@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_app/CustomWidget/ExpansionPanelCustom.dart';
+import 'package:flutter_app/Model/CinemaAddress.dart';
 import 'package:flutter_app/Model/CinemaSchedule.dart';
 import 'package:flutter_app/Model/Movie.dart';
 import 'package:flutter_app/Model/TicketPrice.dart';
@@ -53,7 +54,7 @@ class BookingScheduleViewState extends State<BookingScheduleView>{
 
   }
 
-  Widget GetSchedule({ConnectionState status}){
+  Widget ScheduleByGroup({ConnectionState status}){
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
@@ -196,7 +197,7 @@ class BookingScheduleViewState extends State<BookingScheduleView>{
                                                         },
                                                       );
                                                     }else{
-                                                      if(snapshot.connectionState == ConnectionState.done && _scheduleDetail.cinemas[indexChild].ticket_price.length == 0)
+                                                      if(snapshot.connectionState == ConnectionState.done && _scheduleDetail.cinemas[indexChild].ticket_price.length == 0 )
                                                         return Container();
                                                       else
                                                         return Container(padding: EdgeInsets.all(10),child:  CircularProgressIndicator(),);
@@ -220,6 +221,139 @@ class BookingScheduleViewState extends State<BookingScheduleView>{
                       )
                     ],
                   );
+                },
+              );
+            },
+          ),
+        ),
+
+      ],
+    );
+  }
+
+  Widget ScheduleByList({ConnectionState status}){
+    List<CinemaAddress> addressList = new List<CinemaAddress>();
+    for(var cinema in _scheduleFiltered.values){
+      for(var item in cinema){
+        addressList.addAll(item.cinemas.map((f)=>f));
+      }
+      
+    }
+    addressList.sort((a,b)=> a.distance.compareTo(b.distance));
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        Flexible(
+          child: ListView.builder(
+            itemCount: addressList.length,
+            shrinkWrap: true,
+            physics: NeverScrollableScrollPhysics(),
+            itemBuilder: (BuildContext context,index){
+              String cinemaKey = addressList[index].parent_cinema;
+              CinemaAddress address = _scheduleFiltered[cinemaKey].first.cinemas.firstWhere((f)=>f.parent_cinema == cinemaKey && f.cinema_id == addressList[index].cinema_id);
+              return Builder(
+                builder: (mContext){
+                  return ExpansionPanelListCustom(
+                    animationDuration: Duration(milliseconds: 700),
+                    expansionCallback:  (childIndex,status) {
+                      setState(() {
+
+                        _selectedCinemaAddress = index;
+                      });
+                    },
+                    children: [
+                      ExpansionPanelCustom(
+                          canTapOnHeader: true,
+                          isExpanded: _selectedCinemaAddress == index,
+                          headerBuilder: (context,status){
+                            return Container(
+                              child: Row(
+                                children: <Widget>[
+                                  Flexible(
+                                    child: Row(
+                                      children: <Widget>[
+                                        Text(GlobalData.parentCinema.firstWhere((f)=>f.id==cinemaKey).shortName,style: TextStyle(color: GlobalData.parentCinema.firstWhere((f)=>f.id==cinemaKey).color),),
+                                        Text(" - "+addressList[index].cinema_name_s2),
+                                      ],
+                                    ),
+                                  ),
+                                  Row(
+                                    children: <Widget>[
+                                      Icon(Icons.send,size: 10,color: Colors.black54,),
+                                      Text(" "+addressList[index].distance.toStringAsFixed(1)),
+                                      Text(" km",style: TextStyle(color: Colors.black38),)
+                                    ],
+                                  )
+                                ],
+                              ),
+                            );
+                          },// Cinema Address
+                          body:  FutureBuilder(
+                            future: address.ticket_price.length == 0 && status != ConnectionState.waiting?address.GetTicketPrice(lock: true):Future<List<TicketPrice>>(()=>address.ticket_price),
+                            //future: _scheduleDetail.cinemas[indexChild].GetTicketPrice(),
+                            builder: (context,snapshot){
+                              if(snapshot.connectionState == ConnectionState.waiting && address.ticket_price.length == 0){
+                                if(_selectedCinemaAddress == index)
+                                  return Container(padding: EdgeInsets.all(10),child:  CircularProgressIndicator(),);
+                                else
+                                  return Container();
+                              }else{
+                                if(address.ticket_price.length != 0){
+                                  List<String> byDate =  address.ticket_price.map((f)=> f.session_time).toSet().toList();
+                                  List<TicketPrice> filteredPrice = new List<TicketPrice>();
+                                  for(String date in byDate){
+                                    filteredPrice.add(address.ticket_price.where((x)=> x.session_time == date).first);
+                                  }
+                                  DateFormat formatDate = new DateFormat("yyyy-MM-dd HH:mm:ss");
+                                  DateFormat formatTime = new DateFormat("HH:mm");
+                                  return ListView.builder(
+                                    shrinkWrap: true,
+                                    physics: NeverScrollableScrollPhysics(),
+                                    itemCount: filteredPrice.length,
+                                    itemBuilder: (context,indexTicket){
+                                      return Container(
+                                          padding:EdgeInsets.all(7),
+                                          child: InkWell(
+                                            onTap: () async {
+                                              dynamic returnMessage = await Navigator.pushNamed(context, "/booking/choose_price",arguments: {
+                                                "movie": widget._movie,
+                                                "cinema": GlobalData.parentCinema.firstWhere((f)=>f.id==cinemaKey),
+                                                "address": address,
+                                                "tickets": address.ticket_price.where((f)=> f.session_time == filteredPrice[indexTicket].session_time).toList()
+
+                                              });
+                                              print("message return:$returnMessage");
+                                            },
+                                            child: Row(
+                                              children: <Widget>[
+                                                Text(formatTime.format(formatDate.parse(filteredPrice[indexTicket].session_time)),style: TextStyle(fontSize: 18,fontWeight: FontWeight.w400),),
+                                                Text(" ~ ",style: TextStyle(color: Colors.black38),),
+                                                Text(formatTime.format(formatDate.parse(filteredPrice[indexTicket].session_time).add(Duration(minutes:widget._movie.film_information.film_duration))),style: TextStyle(color: Colors.black38),),
+                                                Spacer(),
+                                                Text(filteredPrice[indexTicket].version+" - Phụ đề",style: TextStyle(color: Colors.black38),),
+                                                Spacer(),
+                                                Text("~"+(filteredPrice[indexTicket].type_price~/1000).toString()+"k",style: TextStyle(color: Colors.black38),),
+                                              ],
+                                            ),
+                                          )
+                                      );// Cinema Ticket Price
+                                    },
+                                  );
+                                }else{
+                                  if(snapshot.connectionState == ConnectionState.done && address.ticket_price.length == 0)
+                                    return Container();
+                                  else
+                                    return Container(padding: EdgeInsets.all(10),child:  CircularProgressIndicator(),);
+                                }
+
+                              }
+
+                            },
+                          )
+                      )
+                    ],
+                  );
+
                 },
               );
             },
@@ -267,7 +401,7 @@ class BookingScheduleViewState extends State<BookingScheduleView>{
                       });
                     }
                     _cinemaKey = _scheduleFiltered.keys.elementAt(0);
-                    if(_scheduleDetail == null && _scheduleFiltered.values.first.length != 0){
+                    if(_viewType == true &&_scheduleDetail == null && _scheduleFiltered.values.first.length != 0){
                       _scheduleDetail = _scheduleFiltered.values.first.first;
                     }
                     return Container(
@@ -350,6 +484,7 @@ class BookingScheduleViewState extends State<BookingScheduleView>{
                                   onChanged: (value){
                                     setState(() {
                                       _viewType = value;
+                                      _scheduleDetail = null;
                                     });
                                   },
 
@@ -416,7 +551,7 @@ class BookingScheduleViewState extends State<BookingScheduleView>{
                             padding: EdgeInsets.all(5),
                             child: Text(Helper.GetFullNameOfDate(DateTime.now().add(Duration(days: _selectedDay))),style: TextStyle(color: Colors.black54),),
                           ),
-                          GetSchedule(status: snapshot.connectionState),
+                          _viewType?ScheduleByGroup(status: snapshot.connectionState):ScheduleByList(status: snapshot.connectionState),
 
 
                         ],

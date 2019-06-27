@@ -45,10 +45,11 @@ class RoomMap{
   static Future<RoomMap> GetMap(String fetchName,String sessionId,List<Map<String,dynamic>> queryTicket) async {
     RoomMap result = null;
     String inputTicket = json.encode(queryTicket);
+    String body = '{"param":{"url":"/checkout/$fetchName/ticket","keyCache":"no-cache"},"data":{"session_id":"$sessionId","list_ticket":$inputTicket,"user_session_id":"","is_full_data":1},"method":"POST"}';
     await http.post(
       "https://123phim.vn/apitomapp",
       headers: {"Content-Type": "application/json;charset=UTF-8"},
-      body:'{"param":{"url":"/checkout/$fetchName/ticket","keyCache":"no-cache"},"data":{"session_id":"$sessionId","list_ticket":$inputTicket,"user_session_id":"","is_full_data":1},"method":"POST"}'
+      body: body
     ).then((response){
       if(response.statusCode == 200){
         Map<String,dynamic> rs = json.decode(response.body)["result"]["list_seat"];

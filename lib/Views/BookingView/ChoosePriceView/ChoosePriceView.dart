@@ -26,19 +26,38 @@ class ChoosePriceView extends StatefulWidget{
 
 }
 
-class ChoosePriceState extends State<ChoosePriceView>{
+class ChoosePriceState extends State<ChoosePriceView> with SingleTickerProviderStateMixin{
   Map<String,int> chooseTicket;
   Map<String,int> chooseCombo = new Map<String,int>();
   List<Combo> _combo;
   int amount  = 0;
-
-
+  AnimationController _animationController;
+  Animation<TextStyle> _animationChangeNumber;
+  Animation<TextStyle> _animationChangeAmount;
   @override
   void initState() {
     // TODO: implement initState
     //super.initState();
+    _animationController = new AnimationController(vsync: this,duration: Duration(milliseconds: 500));
+    CurvedAnimation curve = new CurvedAnimation(parent: _animationController, curve: Curves.linear);
+    _animationChangeNumber = new TextStyleTween(begin: TextStyle(fontSize: 18,fontWeight: FontWeight.bold),end: TextStyle(fontSize: 24,fontWeight: FontWeight.bold)).animate(curve);
+    _animationChangeNumber.addStatusListener((AnimationStatus status){
+      if(status == AnimationStatus.completed){
+        _animationController.reverse();
+      }
+      _animationController.animateTo(target)
+    });
+
 
   }
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    _animationController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     if(widget._movie == null){
@@ -236,11 +255,12 @@ class ChoosePriceState extends State<ChoosePriceView>{
                                           child: InkWell(
                                             onTap: (){
                                               setState(() {
+                                                if(chooseTicket[ticketType] - 1 < 0)
+                                                  return;
                                                 chooseTicket[ticketType] -= 1;
-                                                if(chooseTicket[ticketType] < 0)
-                                                  chooseTicket[ticketType] = 0;
-                                                else
-                                                  amount -= widget._tickets[realIndex].type_price;
+                                                amount -= widget._tickets[realIndex].type_price;
+
+                                                _animationController.forward();
                                               });
 
                                             },
@@ -249,15 +269,29 @@ class ChoosePriceState extends State<ChoosePriceView>{
                                         ),
                                         Container(
                                           width: 25,
-                                          child:  Text(chooseTicket[ticketType].toString(),style: TextStyle(fontSize: 18,fontWeight: FontWeight.bold),textAlign: TextAlign.center,),
+                                          child:  AnimatedBuilder(
+                                              animation: _animationChangeNumber,
+                                              builder: (context,child){
+                                                return Text(chooseTicket[ticketType].toString(),style: _animationChangeNumber.value,textAlign: TextAlign.center,);
+                                              },
+                                          )
+
+
                                         ),
                                         Container(
                                           width: 30,
+                                          foregroundDecoration: BoxDecoration(
+                                              color: Colors.white.withOpacity(chooseTicket[ticketType] >= 10?1:0)
+                                          ),
                                           child: InkWell(
                                             onTap: (){
                                               setState(() {
+                                                if(chooseTicket[ticketType] == 10)
+                                                  return;
                                                 chooseTicket[ticketType] += 1;
                                                 amount += widget._tickets[realIndex].type_price;
+
+                                                _animationController.forward();
                                               });
                                             },
                                             child:Icon(Icons.add,color: Colors.red),
@@ -391,7 +425,12 @@ class ChoosePriceState extends State<ChoosePriceView>{
                                         },
                                       );
                                     }else{
-                                      return CircularProgressIndicator();
+                                      if(snapshot.connectionState == ConnectionState.done && _combo != null)
+                                        return CircularProgressIndicator();
+                                      else{
+                                        _combo = new List<Combo>();
+                                        return Container();
+                                      }
                                     }
                                   }
                                 },

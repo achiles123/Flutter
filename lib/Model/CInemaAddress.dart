@@ -21,7 +21,7 @@ class CinemaAddress{
   String cinema_code;
   String session_code;
   String session_id;
-  bool _locking = false;
+  bool locking = false;
   double distance;
   List<TicketPrice> ticket_price;
   Map<String,dynamic> versions;
@@ -48,12 +48,16 @@ class CinemaAddress{
   }
 
   Future<List<TicketPrice>> GetTicketPrice({bool lock = false}) async {
-    if(_locking == true)
-      return ticket_price;
+    //Future.wait(futures)
+    while(locking == true){
+    await  Future.delayed(Duration(milliseconds: 100));
+    }
+    /*if(locking == true)
+      return ticket_price;*/
     if(lock == true){
-      _locking = true;
       if(ticket_price.length != 0)
         return ticket_price;
+      locking = true;
     }
     List<TicketPrice> ticketPrices = new List<TicketPrice>();
     for(var itemVersion in versions.entries){
@@ -107,7 +111,7 @@ class CinemaAddress{
     }
     ticket_price = ticketPrices;
     if(lock == true){
-      _locking = false;
+      locking = false;
     }
     return ticketPrices;
   }
