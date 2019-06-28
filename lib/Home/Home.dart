@@ -5,6 +5,7 @@ import 'package:flutter_app/Model/User.dart';
 import 'package:flutter_app/Views/StarView/HomeView.dart';
 import 'package:flutter_app/Views/StarView/MovieComingView.dart';
 import 'package:flutter_app/Views/StarView/MoviePlayingView.dart';
+import 'package:flutter_app/Views/UserView/UserNotificationView.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../GlobalData.dart';
@@ -26,6 +27,7 @@ class HomeState extends State<Home> with TickerProviderStateMixin{
   HomeView _homeView;
   MoviePlayingView _moviePlayingView;
   MovieComingView _movieComingView;
+  UserNotificationView _userNotificationView;
   int _chooseLocation;
 
 
@@ -67,6 +69,15 @@ class HomeState extends State<Home> with TickerProviderStateMixin{
     _homeView = _homeView == null?new HomeView():_homeView;
     _moviePlayingView = _moviePlayingView == null?new MoviePlayingView():_moviePlayingView;
     _movieComingView = _movieComingView == null?new MovieComingView():_movieComingView;
+    var tabar = new  TabBarView(
+      controller: _barController,
+      children: <Widget>[
+        _homeView,
+        _moviePlayingView,
+        _movieComingView
+      ],
+    );
+    print(tabar.controller.index);
     return TabBarView(
       controller: _barController,
       children: <Widget>[
@@ -77,19 +88,37 @@ class HomeState extends State<Home> with TickerProviderStateMixin{
     );
   }
 
+  Widget UserBody(){
+    _userNotificationView = _userNotificationView == null?new UserNotificationView():_userNotificationView;
+    return TabBarView(
+      controller: _barController,
+      children: <Widget>[
+        Container(),
+        Container(),
+        _userNotificationView
+      ],
+    );
+  }
+
   Widget BodyData() {
     switch(_bottomIndex){
       case 0: return StarBody();
+      case 4: return UserBody();
       default: return Container();
     }
   }
 
   Widget TabBarData(){
     switch(_bottomIndex){
-      case 0:return TabBar(
+      case 0:return new TabBar(
         controller: _barController,
         labelColor: Colors.deepOrangeAccent,
         unselectedLabelColor: Colors.grey,
+        onTap: (index){
+          setState(() {
+
+          });
+        },
         tabs: <Widget>[
           Tab(text: "Home",),
           Tab(text: "Đang chiếu",),
@@ -190,7 +219,7 @@ class HomeState extends State<Home> with TickerProviderStateMixin{
               setState(() {
                 _bottomIndex = index;
                 switch(index){
-                  case 0:_barController = new TabController(length: 3, vsync: this);break;
+                  case 0:_barController = new TabController(length: 3, vsync: this,initialIndex: 0);break;
                   case 1:_barController = new TabController(length: 2, vsync: this);break;
                   case 2:_barController = new TabController(length: 3, vsync: this);break;
                   case 3:_barController = new TabController(length: 0, vsync: this);break;

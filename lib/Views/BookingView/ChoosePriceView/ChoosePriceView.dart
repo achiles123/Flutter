@@ -26,26 +26,27 @@ class ChoosePriceView extends StatefulWidget{
 
 }
 
-class ChoosePriceState extends State<ChoosePriceView> with SingleTickerProviderStateMixin{
+class ChoosePriceState extends State<ChoosePriceView> with TickerProviderStateMixin{
   Map<String,int> chooseTicket;
   Map<String,int> chooseCombo = new Map<String,int>();
   List<Combo> _combo;
   int amount  = 0;
-  AnimationController _animationController;
-  Animation<TextStyle> _animationChangeNumber;
+  List<AnimationController> _animationController = new List<AnimationController>();
+  AnimationController _animationControllerChangeAmount;
+  List<Animation<TextStyle>> _animationChangeNumber = new List<Animation<TextStyle>>();
   Animation<TextStyle> _animationChangeAmount;
+
   @override
   void initState() {
     // TODO: implement initState
     //super.initState();
-    _animationController = new AnimationController(vsync: this,duration: Duration(milliseconds: 500));
-    CurvedAnimation curve = new CurvedAnimation(parent: _animationController, curve: Curves.linear);
-    _animationChangeNumber = new TextStyleTween(begin: TextStyle(fontSize: 18,fontWeight: FontWeight.bold),end: TextStyle(fontSize: 24,fontWeight: FontWeight.bold)).animate(curve);
-    _animationChangeNumber.addStatusListener((AnimationStatus status){
+    _animationControllerChangeAmount = new AnimationController(vsync: this,duration: Duration(milliseconds: 500));
+    CurvedAnimation curve = new CurvedAnimation(parent: _animationControllerChangeAmount, curve: Curves.linear);
+    _animationChangeAmount = new TextStyleTween(begin: TextStyle(fontSize: 18,color: Color(0xff267326)),end: TextStyle(fontSize: 24,color: Color(0xff267326))).animate(curve);
+    _animationChangeAmount.addStatusListener((AnimationStatus status){
       if(status == AnimationStatus.completed){
-        _animationController.reverse();
+        _animationControllerChangeAmount.reverse();
       }
-      _animationController.animateTo(target)
     });
 
 
@@ -54,7 +55,8 @@ class ChoosePriceState extends State<ChoosePriceView> with SingleTickerProviderS
   @override
   void dispose() {
     // TODO: implement dispose
-    _animationController.dispose();
+    for(var animateController in _animationController)
+      animateController.dispose();
     super.dispose();
   }
 
@@ -71,6 +73,16 @@ class ChoosePriceState extends State<ChoosePriceView> with SingleTickerProviderS
         chooseTicket.addAll({widget._tickets[i].type_code:(i==0?2:0)});
         if(i==0)
           amount += widget._tickets[i].type_price*2;
+        AnimationController animationController = new AnimationController(vsync: this,duration: Duration(milliseconds: 500));
+        CurvedAnimation curve = new CurvedAnimation(parent: animationController, curve: Curves.linear);
+        Animation<TextStyle> animationStyle = new TextStyleTween(begin: TextStyle(fontSize: 18,fontWeight: FontWeight.bold),end: TextStyle(fontSize: 24,fontWeight: FontWeight.bold)).animate(curve);
+        animationStyle.addStatusListener((AnimationStatus status){
+          if(status == AnimationStatus.completed){
+            animationController.reverse();
+          }
+        });
+        _animationController.add(animationController);
+        _animationChangeNumber.add(animationStyle);
       }
     }
     DateFormat formatDate = new DateFormat("yyyy-MM-dd");
@@ -260,7 +272,8 @@ class ChoosePriceState extends State<ChoosePriceView> with SingleTickerProviderS
                                                 chooseTicket[ticketType] -= 1;
                                                 amount -= widget._tickets[realIndex].type_price;
 
-                                                _animationController.forward();
+                                                _animationController[realIndex].forward();
+                                                _animationControllerChangeAmount.forward();
                                               });
 
                                             },
@@ -268,11 +281,11 @@ class ChoosePriceState extends State<ChoosePriceView> with SingleTickerProviderS
                                           ),
                                         ),
                                         Container(
-                                          width: 25,
+                                          width: 30,
                                           child:  AnimatedBuilder(
-                                              animation: _animationChangeNumber,
+                                              animation: _animationChangeNumber[realIndex],
                                               builder: (context,child){
-                                                return Text(chooseTicket[ticketType].toString(),style: _animationChangeNumber.value,textAlign: TextAlign.center,);
+                                                return Text(chooseTicket[ticketType].toString(),style: _animationChangeNumber[realIndex].value,textAlign: TextAlign.center,);
                                               },
                                           )
 
@@ -291,7 +304,8 @@ class ChoosePriceState extends State<ChoosePriceView> with SingleTickerProviderS
                                                 chooseTicket[ticketType] += 1;
                                                 amount += widget._tickets[realIndex].type_price;
 
-                                                _animationController.forward();
+                                                _animationController[realIndex].forward();
+                                                _animationControllerChangeAmount.forward();
                                               });
                                             },
                                             child:Icon(Icons.add,color: Colors.red),
@@ -392,11 +406,11 @@ class ChoosePriceState extends State<ChoosePriceView> with SingleTickerProviderS
                                                   child: InkWell(
                                                     onTap: (){
                                                       setState(() {
+                                                        if(chooseCombo[comboId] - 1 < 0)
+                                                          return;
                                                         chooseCombo[comboId] -= 1;
-                                                        if(chooseCombo[comboId] < 0)
-                                                          chooseCombo[comboId] = 0;
-                                                        else
-                                                          amount -= int.parse(_combo[realIndex].item_price);
+                                                        amount -= int.parse(_combo[realIndex].item_price);
+                                                        _animationControllerChangeAmount.forward();
                                                       });
 
                                                     },
@@ -404,7 +418,7 @@ class ChoosePriceState extends State<ChoosePriceView> with SingleTickerProviderS
                                                   ),
                                                 ),
                                                 Container(
-                                                  width: 25,
+                                                  width: 30,
                                                   child:  Text(chooseCombo[comboId].toString(),style: TextStyle(fontSize: 18,fontWeight: FontWeight.bold),textAlign: TextAlign.center,),
                                                 ),
                                                 Container(
@@ -414,6 +428,7 @@ class ChoosePriceState extends State<ChoosePriceView> with SingleTickerProviderS
                                                       setState(() {
                                                         chooseCombo[comboId] += 1;
                                                         amount += int.parse(_combo[realIndex].item_price);
+                                                        _animationControllerChangeAmount.forward();
                                                       });
                                                     },
                                                     child:Icon(Icons.add,color: Colors.red),
@@ -486,7 +501,13 @@ class ChoosePriceState extends State<ChoosePriceView> with SingleTickerProviderS
                                 ),
                                 Container(
                                   margin: EdgeInsets.only(left: 3),
-                                  child: Text(NumberFormat("#,##0","en_US").format(amount).replaceAll(",", "."),style: TextStyle(color: Color(0xff267326),fontSize: 18),),
+                                  child: AnimatedBuilder(
+                                      animation: _animationChangeAmount,
+                                      builder: (context,child){
+                                        return Text(NumberFormat("#,##0","en_US").format(amount).replaceAll(",", "."),style: _animationChangeAmount.value,);
+                                      }
+                                  ),
+
                                 ),
                                 Container(
                                   margin: EdgeInsets.only(left: 3),
