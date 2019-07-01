@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/Model/FirebaseNotification.dart';
+import 'package:flutter_app/Model/SignalrNot%C3%ACication.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 
+String channelId = "1";
+String channelName = "Channel 1";
+String channelDescription = "Test";
 class UserNotificationView extends StatefulWidget{
   @override
   State<StatefulWidget> createState() {
@@ -25,6 +29,12 @@ class UserNotificationState extends State<UserNotificationView>{
     var initSetting = new InitializationSettings(initAndroidSetting, initIOSSetting);
     _localNotifications = new FlutterLocalNotificationsPlugin();
     _localNotifications.initialize(initSetting,onSelectNotification: Notification);
+    AndroidNotificationDetails androidNotificationDetails = new AndroidNotificationDetails(channelId, channelName, channelDescription);
+    IOSNotificationDetails iosNotificationDetails = new IOSNotificationDetails();
+    NotificationDetails notificationDetails = new NotificationDetails(androidNotificationDetails, iosNotificationDetails);
+    //_localNotifications.show(0, "test", "ok", notificationDetails);
+    SignalrNotification signalr = new SignalrNotification();
+    signalr.receivedNotificaton();
     //_firebaseNotification = FirebaseNotification();
     //_firebaseNotification.SetupFirebase();
   }
@@ -34,7 +44,8 @@ class UserNotificationState extends State<UserNotificationView>{
       context: context,
       builder: (context){
         return AlertDialog(content: Text("abc"),);
-      }
+      },
+      
     );
   }
 
