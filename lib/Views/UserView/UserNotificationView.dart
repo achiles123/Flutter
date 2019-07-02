@@ -32,9 +32,12 @@ class UserNotificationState extends State<UserNotificationView>{
     AndroidNotificationDetails androidNotificationDetails = new AndroidNotificationDetails(channelId, channelName, channelDescription);
     IOSNotificationDetails iosNotificationDetails = new IOSNotificationDetails();
     NotificationDetails notificationDetails = new NotificationDetails(androidNotificationDetails, iosNotificationDetails);
-    //_localNotifications.show(0, "test", "ok", notificationDetails);
+
     SignalrNotification signalr = new SignalrNotification();
-    signalr.receivedNotificaton();
+    signalr.init();
+    signalr.onMessage = (List<dynamic> data){
+      _localNotifications.show(0, "Notification", data[1], notificationDetails);
+    };
     //_firebaseNotification = FirebaseNotification();
     //_firebaseNotification.SetupFirebase();
   }
